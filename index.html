@@ -593,7 +593,8 @@ const matrixCols = 80;
 const matrixDrops = new Array(matrixCols).fill(0);
 
 function drawVisualGenetics() {
-  const t = performance.now() / 1000;
+  const fpsTarget = parseInt(document.getElementById('fpsSelect')?.value || 60);
+  const t = frameCount * (1.0 / fpsTarget);
   
   if (sceneMode === 'dna') {
     ctx.fillStyle = 'rgba(2, 3, 5, 0.25)';
