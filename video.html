@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Ethernium — Sovereign Transmission (Micro-Adjusted Character Position)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;700&family=Inter:wght@200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  @font-face {
+    font-family: 'Nebula';
+    src: local('Nebula'), local('Orbitron-Bold'), url('https://fonts.gstatic.com/s/orbitron/v31/yJB4828cjhM54817fE6a.woff2') format('woff2');
+    font-weight: 700;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; cursor: none !important; }
+
+  :root {
+    --obsidian-base-1: #020305;
+    --obsidian-base-2: #060911;
+    --obsidian-base-3: #090E1B;
+    --obsidian-base-4: #010204;
+    --apple-dark-1: #0B0F19;
+    --apple-dark-2: #0E1424;
+    --cyan: #00F0FF;
+    --emerald: #00FF9D;
+    --gold: #FFD700;
+    --violet: #8B5CF6;
+    --red: #FF3355;
+    --white: #FFFFFF;
+    --muted: #A0AEC0;
+    --dim: #64748B;
+  }
+
+  html, body {
+    width: 1920px; height: 1080px;
+    overflow: hidden;
+    background: #020305;
+    color: var(--white);
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    cursor: none !important;
+  }
+
+  /* ===== FULLSCREEN CANVAS ===== */
+  #nebula-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; }
+
+  /* ===== STAGE & 100% GEOMETRIC CENTERED SCENE ENGINE ===== */
+  #stage {
+    position: absolute; inset: 0; width: 1920px; height: 1080px; z-index: 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .scene {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    opacity: 0;
+    transform: scale(1.03);
+    filter: blur(10px);
+    transition: opacity 1.0s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    will-change: opacity, transform, filter;
+  }
+  .scene.active {
+    opacity: 1; transform: scale(1); filter: blur(0px);
+    pointer-events: auto;
+  }
+  .scene.exit {
+    opacity: 0; transform: scale(0.97); filter: blur(12px);
+  }
+
+  /* ===== REVEAL ANIMATIONS ===== */
+  .reveal-item {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1),
+                transform 0.9s cubic-bezier(0.16,1,0.3,1);
+  }
+  .reveal-item.visible { opacity: 1; transform: translateY(0); }
+  .reveal-item.scale-in { transform: scale(0.88); }
+  .reveal-item.scale-in.visible { transform: scale(1); }
+
+  /* ===== RESTORED PRISTINE CRISP LOGO ON 3D ACRYLIC GLASS OBSIDIAN BADGE ===== */
+  .brand-logo-container {
+    width: 145px; height: 145px;
+    border-radius: 50%;
+    /* 3D ACRYLIC GLASS RADIAL SHADER & FROSTED BACKING */
+    background: 
+      radial-gradient(circle at 35% 25%, rgba(110, 135, 180, 0.4) 0%, rgba(20, 28, 48, 0.85) 50%, rgba(4, 6, 12, 0.98) 100%),
+      linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0.85) 100%);
+    /* POLISHED ACRYLIC BEVEL RIM */
+    border: 2px solid rgba(255, 255, 255, 0.65);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    /* PURE WHITE BACKLIGHT HALO STRICTLY BEHIND THE ACRYLIC BADGE */
+    box-shadow: 
+      0 0 28px rgba(255, 255, 255, 0.9),
+      0 0 55px rgba(255, 255, 255, 0.45),
+      inset 0 4px 10px rgba(255, 255, 255, 0.7),
+      inset 0 -10px 22px rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(25px) saturate(180%);
+    margin-bottom: 8px;
+    animation: medalFloat 4s ease-in-out infinite alternate;
+  }
+
+  .brand-logo-container.lg {
+    width: 195px; height: 195px;
+    border-width: 2.5px;
+    box-shadow: 
+      0 0 38px rgba(255, 255, 255, 0.95),
+      0 0 75px rgba(255, 255, 255, 0.55),
+      inset 0 5px 14px rgba(255, 255, 255, 0.75),
+      inset 0 -12px 28px rgba(0, 0, 0, 0.95);
+  }
+
+  /* 3D ACRYLIC SPECULAR GLASS REFLECTION LENS (BEHIND LOGO AT Z-INDEX 3) */
+  .brand-logo-container::before {
+    content: '' !important;
+    display: block !important;
+    position: absolute; inset: 0; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.1) 32%, transparent 58%);
+    pointer-events: none; z-index: 3;
+  }
+
+  /* INNER POLISHED ACRYLIC BEVEL RIM (BEHIND LOGO AT Z-INDEX 4) */
+  .brand-logo-container::after {
+    content: ''; position: absolute; inset: 3px; border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    pointer-events: none; z-index: 4;
+  }
+
+  /* MAXIMUM CRISP LOGO EMBLEM FLOATING ON TOP AT Z-INDEX 10 */
+  .brand-logo-img {
+    width: 98%; height: 98%;
+    object-fit: contain;
+    display: block;
+    position: relative; z-index: 10;
+    filter: none !important;
+  }
+
+  /* MICRO-ADJUSTED CHARACTER POSITION (LEFT: -260px, TOP: -5px, HEIGHT: 460px, Z-INDEX: 100) */
+  .character-lean-clean {
+    position: absolute;
+    left: -260px;
+    top: -5px;
+    height: 460px;
+    object-fit: contain;
+    background: transparent !important;
+    z-index: 100;
+    filter: drop-shadow(-10px 14px 20px rgba(0,0,0,0.85)) !important;
+    pointer-events: none;
+    animation: characterLeanFloat 4s ease-in-out infinite alternate;
+  }
+
+  @keyframes characterLeanFloat {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-5px); }
+  }
+
+  @keyframes medalFloat {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-7px); }
+  }
+
+  /* ===== LARGE TYPOGRAPHY ===== */
+  .font-nebula {
+    font-family: 'Nebula', 'Orbitron', monospace;
+    font-weight: 800; letter-spacing: 8px; text-transform: uppercase;
+  }
+  .t-display {
+    font-family: 'Inter', sans-serif;
+    font-weight: 900; font-size: 54px; line-height: 1.2; letter-spacing: -1.5px;
+  }
+  .t-body {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500; font-size: 22px; line-height: 1.6; color: var(--muted);
+  }
+  .t-mono {
+    font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 17px; letter-spacing: 1px;
+  }
+  .t-label {
+    font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px; letter-spacing: 5px; color: var(--muted); text-transform: uppercase;
+  }
+
+  /* ===== CLEAN MACOS APPLE TERMINAL PANELS ===== */
+  .clean-apple-terminal {
+    width: 900px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--apple-dark-1) 0%, var(--apple-dark-2) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 25px 80px rgba(0,0,0,0.95), inset 0 1px 1px rgba(255,255,255,0.15);
+    overflow: hidden;
+    position: relative;
+    text-align: left;
+  }
+
+  .term-header-apple {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 22px;
+    background: rgba(0, 0, 0, 0.35);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    position: relative; z-index: 10;
+  }
+
+  .apple-dots-container {
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .apple-dot {
+    width: 13px; height: 13px; border-radius: 50%;
+    display: inline-block; position: relative;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.5);
+  }
+  .apple-dot.r {
+    background: radial-gradient(circle at 35% 35%, #FF756B 0%, #FF5F56 60%, #E0443E 100%);
+    border: 0.5px solid #E0443E;
+  }
+  .apple-dot.y {
+    background: radial-gradient(circle at 35% 35%, #FFCC4D 0%, #FFBD2E 60%, #DEA123 100%);
+    border: 0.5px solid #DEA123;
+  }
+  .apple-dot.g {
+    background: radial-gradient(circle at 35% 35%, #34DF4C 0%, #27C93F 60%, #1AAB29 100%);
+    border: 0.5px solid #1AAB29;
+  }
+
+  .term-title-apple {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600; color: var(--white);
+    letter-spacing: 2px; margin-left: 10px;
+  }
+
+  .bar-tag-apple {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--emerald);
+    letter-spacing: 3px; font-weight: 700;
+  }
+
+  .clean-apple-body {
+    padding: 26px 40px; position: relative; z-index: 4;
+  }
+
+  /* TERMINAL CODE TEXT */
+  .terminal-v2 { font-family: 'JetBrains Mono', monospace; font-size: 18.5px; line-height: 1.95; }
+  .term-line { opacity: 0; transform: translateY(6px); transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1); }
+  .term-line.show { opacity: 1; transform: translateY(0); }
+  .term-prompt { color: var(--emerald); font-weight: 700; }
+  .term-cmd { color: var(--white); font-weight: 600; }
+  .term-out { color: var(--muted); }
+  .term-hl { color: var(--cyan); font-weight: 700; }
+  .term-hl-big { color: var(--emerald); font-weight: 800; font-size: 24px; text-shadow: 0 0 16px rgba(0,255,157,0.5); }
+  .term-success { color: var(--emerald); font-weight: 700; }
+  .term-danger { color: var(--red); font-weight: 700; }
+  .term-gold { color: var(--gold); font-weight: 600; }
+
+  /* DIFF STYLES */
+  .diff-v2 { font-family: 'JetBrains Mono', monospace; font-size: 19.5px; line-height: 1.95; width: 900px; }
+  .diff-ctx { color: var(--muted); opacity: 0.8; }
+  .diff-rm { color: #FFA0A0; background: rgba(255,68,102,0.1); border-left: 4px solid var(--red); padding: 4px 20px; margin: 4px -40px; padding-left: 54px; }
+  .diff-add2 { color: #A0FFD0; background: rgba(0,255,157,0.08); border-left: 4px solid var(--emerald); padding: 4px 20px; margin: 4px -40px; padding-left: 54px; }
+  .diff-alert { text-align: center; padding: 16px; color: var(--red); font-size: 15px; letter-spacing: 4px; font-weight: 800; opacity: 0; transition: opacity 0.8s ease; border-top: 1px solid rgba(255,68,102,0.2); background: rgba(255,68,102,0.06); }
+
+  /* ===== ENGRAVED OBSIDIAN BADGE PLATES ===== */
+  .badge-plate-v2 {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 15px; padding: 38px 60px 48px 60px; position: relative; z-index: 4;
+    width: 840px;
+    background: linear-gradient(135deg, var(--obsidian-base-1) 0%, var(--obsidian-base-2) 35%, var(--obsidian-base-3) 70%, var(--obsidian-base-4) 100%);
+    border-radius: 22px;
+    border: 2px solid var(--accent-color, var(--cyan));
+    box-shadow: 0 0 30px var(--accent-color, var(--cyan)), inset 0 0 14px var(--accent-color, var(--cyan));
+    position: relative;
+    overflow: visible;
+  }
+
+  .badge-notch-bottom {
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 16px;
+    background: #020305;
+    border-top: 2px solid var(--accent-color, var(--cyan));
+    border-left: 2px solid var(--accent-color, var(--cyan));
+    border-right: 2px solid var(--accent-color, var(--cyan));
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    clip-path: polygon(0 100%, 12px 0, calc(100% - 12px) 0, 100% 100%);
+    box-shadow: 0 -4px 12px var(--accent-color, var(--cyan));
+    z-index: 10;
+  }
+
+  .notch-inner-line {
+    position: absolute;
+    top: 3px; left: 50%; transform: translateX(-50%);
+    width: 45px; height: 2px;
+    background: var(--accent-color, var(--cyan));
+    box-shadow: 0 0 8px var(--accent-color, var(--cyan));
+  }
+
+  .corner-l-accent {
+    position: absolute; width: 20px; height: 20px;
+    border-color: var(--accent-color, var(--cyan));
+    border-style: solid; z-index: 5; pointer-events: none;
+    filter: drop-shadow(0 0 8px var(--accent-color, var(--cyan)));
+    animation: borderGlow 4s ease-in-out infinite alternate;
+  }
+  .corner-l-accent.top-left { top: 14px; left: 14px; border-width: 3px 0 0 3px; border-top-left-radius: 4px; }
+  .corner-l-accent.top-right { top: 14px; right: 14px; border-width: 3px 3px 0 0; border-top-right-radius: 4px; }
+  .corner-l-accent.bot-left { bottom: 14px; left: 14px; border-width: 0 0 3px 3px; border-bottom-left-radius: 4px; }
+  .corner-l-accent.bot-right { bottom: 14px; right: 14px; border-width: 0 3px 3px 0; border-bottom-right-radius: 4px; }
+
+  @keyframes borderGlow {
+    0% { filter: drop-shadow(0 0 5px var(--cyan)); }
+    50% { filter: drop-shadow(0 0 10px var(--violet)); }
+    100% { filter: drop-shadow(0 0 5px var(--emerald)); }
+  }
+
+  .sheen-layer {
+    position: absolute; inset: 0; pointer-events: none; z-index: 3; opacity: 0.25; border-radius: 22px;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: moveSheen 5s ease-in-out infinite alternate;
+  }
+  @keyframes moveSheen {
+    0% { background-position: -150% 0; }
+    100% { background-position: 150% 0; }
+  }
+
+  .badge-plate-v2 .b-name {
+    font-family: 'Nebula', 'Orbitron', monospace;
+    font-weight: 800; font-size: 44px; letter-spacing: 10px;
+    position: relative; z-index: 4;
+  }
+  .badge-plate-v2 .b-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px; font-weight: 600; letter-spacing: 4px; position: relative; z-index: 4;
+  }
+  .badge-plate-v2 .b-tags {
+    display: flex; gap: 20px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; letter-spacing: 3px;
+    position: relative; z-index: 4;
+  }
+
+  .bp-emerald { --accent-color: var(--emerald); --accent-glow: rgba(0,255,157,0.75); }
+  .bp-emerald .b-name { color: #FFF; text-shadow: 0 0 30px rgba(0,255,157,0.5); }
+  .bp-emerald .b-sub { color: var(--emerald); }
+
+  .bp-gold { --accent-color: var(--gold); --accent-glow: rgba(255,215,0,0.75); }
+  .bp-gold .b-name { color: #FFF; text-shadow: 0 0 30px rgba(255,215,0,0.5); }
+  .bp-gold .b-sub { color: var(--gold); }
+
+  .bp-violet { --accent-color: var(--violet); --accent-glow: rgba(139,92,246,0.75); }
+  .bp-violet .b-name { color: #FFF; text-shadow: 0 0 30px rgba(157,78,221,0.5); }
+  .bp-violet .b-sub { color: var(--violet); }
+
+  /* FLOW & ECOSYSTEM GRID */
+  .flow-v2 { display: flex; align-items: center; gap: 20px; justify-content: center; }
+  .flow-node {
+    padding: 24px 28px 34px 28px; text-align: center; width: 270px;
+    background: linear-gradient(135deg, var(--obsidian-base-1) 0%, var(--obsidian-base-2) 35%, var(--obsidian-base-3) 70%, var(--obsidian-base-4) 100%);
+    position: relative; border-radius: 18px;
+    border: 2px solid var(--accent-color, var(--cyan));
+    box-shadow: 0 0 18px var(--accent-color, var(--cyan));
+    overflow: visible;
+  }
+  .flow-node .node-notch {
+    position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+    width: 70px; height: 12px; background: #020305;
+    border-top: 2px solid var(--accent-color, var(--cyan));
+    border-left: 2px solid var(--accent-color, var(--cyan));
+    border-right: 2px solid var(--accent-color, var(--cyan));
+    border-top-left-radius: 3px; border-top-right-radius: 3px;
+    clip-path: polygon(0 100%, 8px 0, calc(100% - 8px) 0, 100% 100%);
+  }
+
+  .flow-node .fn-name { font-family: 'Nebula', 'Orbitron', monospace; font-weight: 800; font-size: 20px; letter-spacing: 3px; margin-bottom: 8px; position: relative; z-index: 4; }
+  .flow-node .fn-desc { font-size: 13px; font-weight: 500; color: var(--muted); line-height: 1.4; position: relative; z-index: 4; }
+  .flow-node.fn-sen { --accent-color: var(--emerald); } .flow-node.fn-sen .fn-name { color: var(--emerald); }
+  .flow-node.fn-con { --accent-color: var(--violet); } .flow-node.fn-con .fn-name { color: var(--violet); }
+  .flow-node.fn-ai { --accent-color: var(--cyan); } .flow-node.fn-ai .fn-name { color: var(--cyan); }
+  .flow-node.fn-chr { --accent-color: var(--gold); } .flow-node.fn-chr .fn-name { color: var(--gold); }
+  .flow-connector-h { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 18px; letter-spacing: 2px; }
+
+  .eco-grid-v2 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1200px; justify-content: center; }
+  .eco-item {
+    padding: 22px 14px 28px 14px; text-align: center;
+    background: linear-gradient(135deg, var(--obsidian-base-1) 0%, var(--obsidian-base-2) 35%, var(--obsidian-base-3) 70%, var(--obsidian-base-4) 100%);
+    position: relative; border-radius: 16px;
+    border: 2px solid var(--accent-color, var(--cyan));
+    box-shadow: 0 0 14px var(--accent-color, var(--cyan));
+    overflow: visible;
+  }
+  .eco-item .eco-notch {
+    position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+    width: 55px; height: 11px; background: #020305;
+    border-top: 2px solid var(--accent-color, var(--cyan));
+    border-left: 2px solid var(--accent-color, var(--cyan));
+    border-right: 2px solid var(--accent-color, var(--cyan));
+    border-top-left-radius: 3px; border-top-right-radius: 3px;
+    clip-path: polygon(0 100%, 7px 0, calc(100% - 7px) 0, 100% 100%);
+  }
+
+  .neon-svg-icon {
+    width: 40px; height: 40px;
+    margin-bottom: 10px; display: inline-block;
+    filter: drop-shadow(0 0 10px var(--accent-color, var(--cyan)));
+    position: relative; z-index: 4;
+  }
+
+  .eco-item .ei-name { font-family: 'Nebula', 'Orbitron', monospace; font-weight: 800; font-size: 15px; letter-spacing: 2.5px; margin-bottom: 5px; position: relative; z-index: 4; }
+  .eco-item .ei-desc { font-size: 12.5px; font-weight: 500; color: var(--muted); line-height: 1.4; position: relative; z-index: 4; }
+
+  /* INSTALL V2 */
+  .install-cmd { font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 600; letter-spacing: 2px; margin-bottom: 16px; }
+  .install-sub { font-size: 15px; color: var(--muted); letter-spacing: 4px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+  /* START OVERLAY — CLEAN WITHOUT HINT TEXT */
+  #start-overlay {
+    position: fixed; inset: 0; background: var(--obsidian-base-1);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 2000; cursor: pointer; transition: opacity 1.2s cubic-bezier(0.16,1,0.3,1);
+  }
+  #start-overlay.gone { opacity: 0; pointer-events: none; }
+  
+  .so-title {
+    font-family: 'Nebula', 'Orbitron', monospace;
+    font-size: 28px; font-weight: 800; letter-spacing: 12px;
+    color: var(--white) !important;
+    text-shadow: 0 0 35px rgba(255, 255, 255, 0.7);
+    margin-top: 32px;
+  }
+</style>
+</head>
+<body>
+
+<!-- MATTE BLACK SHADER CANVAS WITH STATIC CLEAN MICRO WHITE DOT MATRIX & CORPORATE WHITE SHADER -->
+<canvas id="nebula-canvas"></canvas>
+
+<!-- START OVERLAY -->
+<div id="start-overlay" onclick="startPresentation()">
+  <div class="brand-logo-container lg">
+    <img src="master_vector_crisp_logo.png?v=native" class="brand-logo-img" alt="Ethernium Sovereign Logo" />
+  </div>
+  <div class="so-title">ETHERNIUM SOVEREIGN SUITE</div>
+</div>
+
+<div id="stage">
+
+  <!-- S1: Hook -->
+  <div id="s1" class="scene">
+    <div class="t-label reveal-item" data-d="0">SESSION 47 — TUESDAY 3:42 AM</div>
+    <div style="height:30px"></div>
+    <div class="t-display reveal-item" data-d="600" style="text-align:center; max-width:1050px">
+      Your AI agent just<br>rewrote your spec.
+    </div>
+    <div style="height:20px"></div>
+    <div class="t-body reveal-item" data-d="1200" style="text-align:center">
+      You didn't ask it to. You didn't notice.
+    </div>
+  </div>
+
+  <!-- S2: Diff -->
+  <div id="s2" class="scene">
+    <div class="clean-apple-terminal diff-v2 reveal-item scale-in" data-d="0">
+      <div class="term-header-apple">
+        <div class="apple-dots-container">
+          <span class="apple-dot r"></span>
+          <span class="apple-dot y"></span>
+          <span class="apple-dot g"></span>
+          <span class="term-title-apple">spec.md — Authentication Requirements</span>
+        </div>
+        <div class="bar-tag-apple">[SPEC_DRIFT_ALERT]</div>
+      </div>
+
+      <div class="clean-apple-body">
+        <div class="diff-ctx">&nbsp;&nbsp;## Authentication Requirements</div>
+        <div class="diff-ctx">&nbsp;&nbsp;All API endpoints require authenticated access.</div>
+        <div class="diff-rm reveal-item" data-d="800">- Authentication <strong>MUST</strong> use Ed25519 signatures</div>
+        <div class="diff-add2 reveal-item" data-d="1200">+ Authentication <strong>should</strong> use JWT tokens</div>
+        <div class="diff-ctx">&nbsp;&nbsp;Tokens expire after 24 hours.</div>
+      </div>
+      <div class="diff-alert" id="diff-alert">⚠&ensp; ONE WORD CHANGED. NOBODY NOTICED.</div>
+    </div>
+  </div>
+
+  <!-- S3: Impact -->
+  <div id="s3" class="scene">
+    <div class="t-display reveal-item" data-d="0" style="text-align:center; color:var(--red); max-width:1050px">
+      3 weeks later, 6 decisions<br>were built on the wrong foundation.
+    </div>
+    <div style="height:32px"></div>
+    <div class="reveal-item" data-d="800" style="display:flex; align-items:center; gap:20px;">
+      <div style="width:70px; height:2px; background:var(--red); opacity:0.5"></div>
+      <div class="t-label" style="color:var(--red); opacity:0.9">THE COGNITIVE CONTINUITY PROBLEM</div>
+      <div style="width:70px; height:2px; background:var(--red); opacity:0.5"></div>
+    </div>
+  </div>
+
+  <!-- S4: Seneschal Reveal — MAIN BADGE PLATE WITH MICRO-ADJUSTED CHARACTER -->
+  <div id="s4" class="scene">
+    <div class="badge-plate-v2 bp-emerald reveal-item scale-in" data-d="0">
+      <img src="character_native.png?v=micropos" class="character-lean-clean" alt="Cyberpunk Character" />
+      <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+      <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+      <div class="sheen-layer"></div>
+      <div class="badge-notch-bottom"><div class="notch-inner-line"></div></div>
+
+      <div class="brand-logo-container">
+        <img src="master_vector_crisp_logo.png?v=native" class="brand-logo-img" alt="Ethernium Logo" />
+      </div>
+      <div class="b-name">SENESCHAL</div>
+      <div class="b-sub">LOCAL-FIRST CONTROL &amp; TOKEN REDUCTION</div>
+      <div class="b-tags">
+        <span>ZERO DEPENDENCIES</span>
+        <span style="opacity:0.3">·</span>
+        <span>LOCAL-FIRST</span>
+        <span style="opacity:0.3">·</span>
+        <span>OPEN SOURCE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5: Seneschal Terminal (NO CHARACTER) -->
+  <div id="s5" class="scene">
+    <div class="clean-apple-terminal terminal-v2 reveal-item scale-in" data-d="0">
+      <div class="term-header-apple">
+        <div class="apple-dots-container">
+          <span class="apple-dot r"></span>
+          <span class="apple-dot y"></span>
+          <span class="apple-dot g"></span>
+          <span class="term-title-apple">seneschal v1.0 — local context control</span>
+        </div>
+        <div class="bar-tag-apple">[CONTEXT_ACTIVE]</div>
+      </div>
+
+      <div class="clean-apple-body">
+        <div class="term-line" id="tl1"><span class="term-prompt">$ </span><span class="term-cmd">seneschal select --path ./my-project --objective "fix login" --max-tokens 8000</span></div>
+        <div class="term-line" id="tl2"><span class="term-out">[SCAN] Analyzing 847 files across 12 directories...</span></div>
+        <div class="term-line" id="tl3"><span class="term-out">[SELECT] Identified 23 relevant files for objective</span></div>
+        <div class="term-line" id="tl4"><span class="term-out">[CONTEXT] Raw project tokens: &nbsp;&nbsp;<span class="term-hl">69,412</span></span></div>
+        <div class="term-line" id="tl5"><span class="term-out">[CONTEXT] Selected tokens: &nbsp;&nbsp;&nbsp;&nbsp;<span class="term-hl-big">8,236</span></span></div>
+        <div class="term-line" id="tl6"><span class="term-success">[RESULT] ▼ 88.1% token reduction on targeted tasks</span></div>
+        <div class="term-line" id="tl7"><br><span class="term-out" style="color:var(--dim); font-size:14px">Runtime deps: 0 · Scoped tasks · Zero import truncation</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6: Conekta Reveal — MAIN BADGE PLATE WITH MICRO-ADJUSTED CHARACTER -->
+  <div id="s6" class="scene">
+    <div class="badge-plate-v2 bp-violet reveal-item scale-in" data-d="0">
+      <img src="character_native.png?v=micropos" class="character-lean-clean" alt="Cyberpunk Character" />
+      <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+      <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+      <div class="sheen-layer"></div>
+      <div class="badge-notch-bottom"><div class="notch-inner-line"></div></div>
+
+      <div class="brand-logo-container">
+        <img src="master_vector_crisp_logo.png?v=native" class="brand-logo-img" alt="Ethernium Logo" />
+      </div>
+      <div class="b-name">CONEKTA</div>
+      <div class="b-sub">SOVEREIGN AGENT &amp; WORKFLOW CONNECTOR</div>
+      <div class="b-tags">
+        <span>MULTI-AGENT ROUTING</span>
+        <span style="opacity:0.3">·</span>
+        <span>ZERO-LATENCY BUS</span>
+        <span style="opacity:0.3">·</span>
+        <span>LOCAL PROTOCOL</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7: Chronolith Reveal — MAIN BADGE PLATE WITH MICRO-ADJUSTED CHARACTER -->
+  <div id="s7" class="scene">
+    <div class="badge-plate-v2 bp-gold reveal-item scale-in" data-d="0">
+      <img src="character_native.png?v=micropos" class="character-lean-clean" alt="Cyberpunk Character" />
+      <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+      <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+      <div class="sheen-layer"></div>
+      <div class="badge-notch-bottom"><div class="notch-inner-line"></div></div>
+
+      <div class="brand-logo-container">
+        <img src="master_vector_crisp_logo.png?v=native" class="brand-logo-img" alt="Ethernium Logo" />
+      </div>
+      <div class="b-name">CHRONOLITH</div>
+      <div class="b-sub">CRYPTOGRAPHIC INTEGRITY LAYER</div>
+      <div class="b-tags">
+        <span>MERKLE TREES</span>
+        <span style="opacity:0.3">·</span>
+        <span>ED25519</span>
+        <span style="opacity:0.3">·</span>
+        <span>BITCOIN ANCHOR</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8: Chronolith Terminal (NO CHARACTER) -->
+  <div id="s8" class="scene">
+    <div class="clean-apple-terminal terminal-v2 reveal-item scale-in" data-d="0">
+      <div class="term-header-apple">
+        <div class="apple-dots-container">
+          <span class="apple-dot r"></span>
+          <span class="apple-dot y"></span>
+          <span class="apple-dot g"></span>
+          <span class="term-title-apple">chronolith v1.0 — guardian gate</span>
+        </div>
+        <div class="bar-tag-apple" style="color:var(--gold)">[VERIFICATION_GATE]</div>
+      </div>
+
+      <div class="clean-apple-body">
+        <div class="term-line" id="cl1"><span class="term-prompt">$ </span><span class="term-cmd">chronolith init</span></div>
+        <div class="term-line" id="cl2"><span class="term-gold">[MERKLE] Hashing spec.md → a7f3c2...</span></div>
+        <div class="term-line" id="cl3"><span class="term-gold">[MERKLE] Hashing arch.md → 9e1b4d...</span></div>
+        <div class="term-line" id="cl4"><span class="term-gold">[TREE]  Root hash: d4e7a1b3c9f2...</span></div>
+        <div class="term-line" id="cl5"><span class="term-success">[BASELINE] Signed with Ed25519 ✓</span></div>
+        <div class="term-line" id="cl6"><br><span class="term-prompt">$ </span><span class="term-cmd">chronolith check</span></div>
+        <div class="term-line" id="cl7"><span class="term-danger" style="font-size:23px">✘ INTEGRITY VIOLATION DETECTED</span></div>
+        <div class="term-line" id="cl8"><span class="term-danger">[DRIFT] spec.md — hash mismatch (expected a7f3c2, got b1d4e8)</span></div>
+        <div class="term-line" id="cl9"><span class="term-danger">[BLOCKED] Push rejected. Baseline integrity not verified.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S9: Flow -->
+  <div id="s9" class="scene">
+    <div class="t-label reveal-item" data-d="0" style="margin-bottom:30px">THE SOVEREIGN AGENT PIPELINE</div>
+    <div class="flow-v2">
+      <div class="flow-node fn-sen reveal-item" data-d="200">
+        <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+        <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+        <div class="sheen-layer"></div>
+        <div class="node-notch"></div>
+        <div class="fn-name">SENESCHAL</div>
+        <div class="fn-desc">Selects Context<br>Scans &amp; Limits Tokens</div>
+      </div>
+      <div class="flow-connector-h reveal-item" data-d="500"><span>→</span></div>
+      <div class="flow-node fn-con reveal-item" data-d="700">
+        <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+        <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+        <div class="sheen-layer"></div>
+        <div class="node-notch"></div>
+        <div class="fn-name">CONEKTA</div>
+        <div class="fn-desc">Orchestrates Bus<br>&amp; Multi-Agent Workflow</div>
+      </div>
+      <div class="flow-connector-h reveal-item" data-d="1000"><span>→</span></div>
+      <div class="flow-node fn-chr reveal-item" data-d="1200">
+        <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+        <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+        <div class="sheen-layer"></div>
+        <div class="node-notch"></div>
+        <div class="fn-name">CHRONOLITH</div>
+        <div class="fn-desc">Verifies Integrity<br>&amp; Anchors Baseline</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S10: Ecosystem Grid -->
+  <div id="s10" class="scene">
+    <div class="t-label reveal-item" data-d="0" style="margin-bottom:24px">ETHERNIUM SOVEREIGN ECOSYSTEM</div>
+    <div class="eco-grid-v2">
+      
+      <!-- 1. SENESCHAL -->
+      <div class="eco-item reveal-item" data-d="150" style="--accent-color:var(--emerald)">
+        <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+        <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+        <div class="sheen-layer"></div><div class="eco-notch"></div>
+        <svg class="neon-svg-icon" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M12 8v8M8 12h8"/>
+        </svg>
+        <div class="ei-name" style="color:var(--emerald)">SENESCHAL</div>
+        <div class="ei-desc">Context &amp; token control</div>
+      </div>
+
+      <!-- 2. CONEKTA -->
+      <div class="eco-item reveal-item" data-d="250" style="--accent-color:var(--violet)">
+        <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+        <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+        <div class="sheen-layer"></div><div class="eco-notch"></div>
+        <svg class="neon-svg-icon" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v6M6 8h12v4a6 6 0 01-12 0V8zM12 18v4M9 22h6"/>
+        </svg>
+        <div class="ei-name" style="color:var(--violet)">CONEKTA</div>
+        <div class="ei-desc">Agent orchestration bus</div>
+      </div>
+
+      <!-- 3. CHRONOLITH -->
+      <div class="eco-item reveal-item" data-d="350" style="--accent-color:var(--gold)">
+        <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+        <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+        <div class="sheen-layer"></div><div class="eco-notch"></div>
+        <svg class="neon-svg-icon" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+        </svg>
+        <div class="ei-name" style="color:var(--gold)">CHRONOLITH</div>
+        <div class="ei-desc">Cryptographic integrity</div>
+      </div>
+
+      <!-- 4. ICHIRO -->
+      <div class="eco-item reveal-item" data-d="450" style="--accent-color:var(--cyan)">
+        <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+        <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+        <div class="sheen-layer"></div><div class="eco-notch"></div>
+        <svg class="neon-svg-icon" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3a9 9 0 019 9 9 9 0 01-9 9M12 7a5 5 0 015 5 5 5 0 01-5 5"/>
+          <circle cx="12" cy="12" r="2"/>
+        </svg>
+        <div class="ei-name" style="color:var(--cyan)">ICHIRO</div>
+        <div class="ei-desc">3D narrative archive</div>
+      </div>
+
+      <!-- 5. OBSIDIAN FORGE -->
+      <div class="eco-item reveal-item" data-d="550" style="--accent-color:#FF8C42">
+        <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+        <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+        <div class="sheen-layer"></div><div class="eco-notch"></div>
+        <svg class="neon-svg-icon" viewBox="0 0 24 24" fill="none" stroke="#FF8C42" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 12l-8.5 8.5a2.12 2.12 0 01-3-3L12 9"/>
+          <path d="M17.64 4.36a2.5 2.5 0 013.53 3.53L17 12l-5-5 5.64-2.64z"/>
+        </svg>
+        <div class="ei-name" style="color:#FF8C42">OBSIDIAN FORGE</div>
+        <div class="ei-desc">SVG asset engine</div>
+      </div>
+
+      <!-- 6. FONTS FORGE -->
+      <div class="eco-item reveal-item" data-d="650" style="--accent-color:#FF8C42">
+        <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+        <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+        <div class="sheen-layer"></div><div class="eco-notch"></div>
+        <svg class="neon-svg-icon" viewBox="0 0 24 24" fill="none" stroke="#FF8C42" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20h16M7 16L12 4l5 12M9 12h6"/>
+          <circle cx="12" cy="4" r="1.5" fill="#FF8C42"/>
+        </svg>
+        <div class="ei-name" style="color:#FF8C42">FONTS FORGE</div>
+        <div class="ei-desc">Vector font pipeline</div>
+      </div>
+
+      <!-- 7. NULLA-LABS -->
+      <div class="eco-item reveal-item" data-d="750" style="--accent-color:var(--cyan)">
+        <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+        <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+        <div class="sheen-layer"></div><div class="eco-notch"></div>
+        <svg class="neon-svg-icon" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="2.5" fill="var(--cyan)"/>
+          <ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(30 12 12)"/>
+          <ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(150 12 12)"/>
+        </svg>
+        <div class="ei-name" style="color:var(--cyan)">NULLA-LABS</div>
+        <div class="ei-desc">Physics &amp; IUPAC lab</div>
+      </div>
+
+      <!-- 8. NEMETH CORP -->
+      <div class="eco-item reveal-item" data-d="850" style="--accent-color:var(--gold)">
+        <div class="corner-l-accent top-left"></div><div class="corner-l-accent top-right"></div>
+        <div class="corner-l-accent bot-left"></div><div class="corner-l-accent bot-right"></div>
+        <div class="sheen-layer"></div><div class="eco-notch"></div>
+        <svg class="neon-svg-icon" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 22h16M2 18h20M6 18V6M10 18V6M14 18V6M18 18V6M4 6h16M12 2L2 6h20L12 2z"/>
+        </svg>
+        <div class="ei-name" style="color:var(--gold)">NEMETH CORP</div><div class="ei-desc">Autonomous architecture</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- S11: Install -->
+  <div id="s11" class="scene">
+    <div class="clean-apple-terminal install-v2 reveal-item scale-in" data-d="0">
+      <div class="term-header-apple">
+        <div class="apple-dots-container">
+          <span class="apple-dot r"></span>
+          <span class="apple-dot y"></span>
+          <span class="apple-dot g"></span>
+          <span class="term-title-apple">terminal — nullalabs@ethernium:~</span>
+        </div>
+        <div class="bar-tag-apple">[READY_TO_DEPLOY]</div>
+      </div>
+
+      <div class="clean-apple-body" style="padding: 44px 70px; text-align:center">
+        <div class="install-cmd">
+          <span style="color:var(--emerald)">$</span> pip install <span style="color:var(--cyan)">seneschal</span> <span style="color:var(--violet)">conekta</span> <span style="color:var(--gold)">chronolith</span>
+        </div>
+        <div class="install-sub">SOVEREIGN AGENT ARCHITECTURE · LOCAL-FIRST</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S12: Final Logo — SWAPPED COLORS: WHITE TITLE, WHITE GLOW, CYAN SUBTITLES -->
+  <div id="s12" class="scene">
+    <div class="brand-logo-container lg reveal-item scale-in" data-d="0">
+      <img src="master_vector_crisp_logo.png?v=native" class="brand-logo-img" alt="Ethernium Logo" />
+    </div>
+    <div style="height:20px"></div>
+    <div class="font-nebula reveal-item" data-d="500" style="font-size:52px; letter-spacing:14px; color:var(--white) !important; text-shadow:0 0 45px rgba(255,255,255,0.7)">ETHERNIUM</div>
+    <div class="t-mono reveal-item" data-d="1000" style="font-size:14px; color:var(--cyan) !important; text-shadow:0 0 12px rgba(0,240,255,0.5); letter-spacing:8px; margin-top:10px">BUILT WITH SOVEREIGNTY — NULLA-LABS // NEMETH CORP.</div>
+    <div class="t-mono reveal-item" data-d="1400" style="font-size:20px; color:var(--cyan) !important; text-shadow:0 0 16px rgba(0,240,255,0.6); letter-spacing:4px; margin-top:22px">github.com/SteveBlackbeard</div>
+  </div>
+
+</div>
+
+<script>
+/* ===== MATTE BLACK SHADER CANVAS WITH STATIC CLEAN MICRO WHITE DOT MATRIX & CORPORATE WHITE SHADER ===== */
+const cv = document.getElementById('nebula-canvas');
+const cx = cv.getContext('2d');
+cv.width = 1920; cv.height = 1080;
+
+const lights = [
+  { x: 960, y: 540, r: 850, color: 'rgba(255, 255, 255, 0.05)', vx: 0.03, vy: 0.02 },
+  { x: 400, y: 300, r: 650, color: 'rgba(0, 240, 255, 0.04)', vx: -0.02, vy: 0.03 },
+  { x: 1520, y: 780, r: 700, color: 'rgba(255, 255, 255, 0.04)', vx: 0.02, vy: -0.02 }
+];
+
+const dotGridStep = 35;
+const squareDots = [];
+for (let x = 35; x < 1920; x += dotGridStep) {
+  for (let y = 35; y < 1080; y += dotGridStep) {
+    squareDots.push({
+      x, y,
+      size: 1.5,
+      alpha: 0.22
+    });
+  }
+}
+
+function renderCorporateMatteShader() {
+  const bgGrad = cx.createRadialGradient(960, 540, 100, 960, 540, 1200);
+  bgGrad.addColorStop(0, '#060912');
+  bgGrad.addColorStop(0.5, '#020305');
+  bgGrad.addColorStop(1, '#000000');
+  cx.fillStyle = bgGrad;
+  cx.fillRect(0, 0, 1920, 1080);
+
+  lights.forEach(l => {
+    l.x += l.vx; l.y += l.vy;
+    if (l.x < 200 || l.x > 1720) l.vx *= -1;
+    if (l.y < 200 || l.y > 880) l.vy *= -1;
+
+    const g = cx.createRadialGradient(l.x, l.y, 10, l.x, l.y, l.r);
+    g.addColorStop(0, l.color);
+    g.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    cx.fillStyle = g;
+    cx.beginPath(); cx.arc(l.x, l.y, l.r, 0, Math.PI * 2); cx.fill();
+  });
+
+  squareDots.forEach(d => {
+    cx.fillStyle = `rgba(255, 255, 255, ${d.alpha})`;
+    cx.fillRect(d.x - 0.75, d.y - 0.75, d.size, d.size);
+  });
+
+  requestAnimationFrame(renderCorporateMatteShader);
+}
+renderCorporateMatteShader();
+
+/* ===== TIMELINE & SCENE CONTROLLER ===== */
+const TOTAL = 90;
+let t0 = null, playing = false, tlIdx = 0, activeScene = null;
+
+function show(id) {
+  if (activeScene) {
+    const prev = document.getElementById(activeScene);
+    prev.classList.remove('active'); prev.classList.add('exit');
+  }
+  const el = document.getElementById(id);
+  el.classList.remove('exit');
+  void el.offsetWidth;
+  el.classList.add('active');
+  activeScene = id;
+  el.querySelectorAll('.reveal-item').forEach(ri => {
+    const delay = parseInt(ri.dataset.d || '0');
+    setTimeout(() => ri.classList.add('visible'), delay + 150);
+  });
+}
+
+function tl(id) { const e = document.getElementById(id); if(e) e.classList.add('show'); }
+
+const timeline = [
+  [0.0, () => show('s1')],
+  [5.0, () => show('s2')],
+  [7.0, () => { document.getElementById('diff-alert').style.opacity = '1'; }],
+  [9.5, () => show('s3')],
+  [13.5, () => show('s4')],
+  [17.5, () => show('s5')],
+  [18.0, () => tl('tl1')],
+  [19.2, () => tl('tl2')],
+  [20.2, () => tl('tl3')],
+  [21.2, () => tl('tl4')],
+  [22.4, () => tl('tl5')],
+  [23.6, () => tl('tl6')],
+  [24.6, () => tl('tl7')],
+  [27.0, () => show('s6')],
+  [33.0, () => show('s7')],
+  [37.0, () => show('s8')],
+  [37.5, () => tl('cl1')],
+  [38.3, () => tl('cl2')],
+  [39.0, () => tl('cl3')],
+  [39.8, () => tl('cl4')],
+  [40.5, () => tl('cl5')],
+  [41.5, () => tl('cl6')],
+  [42.5, () => tl('cl7')],
+  [43.5, () => tl('cl8')],
+  [44.5, () => tl('cl9')],
+  [48.0, () => show('s9')],
+  [55.0, () => show('s10')],
+  [68.0, () => show('s11')],
+  [76.0, () => show('s12')],
+];
+
+function tick() {
+  if (!playing) return;
+  const elapsed = (performance.now() - t0) / 1000;
+
+  while (tlIdx < timeline.length && elapsed >= timeline[tlIdx][0]) {
+    timeline[tlIdx][1]();
+    tlIdx++;
+  }
+  if (elapsed < TOTAL + 2) requestAnimationFrame(tick);
+}
+
+function startPresentation() {
+  document.getElementById('start-overlay').classList.add('gone');
+  t0 = performance.now();
+  playing = true;
+  tick();
+}
+document.addEventListener('keydown', e => { if (e.code === 'Space' && !playing) startPresentation(); });
+</script>
+</body>
+</html>
