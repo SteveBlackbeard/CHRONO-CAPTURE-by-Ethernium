@@ -1,30 +1,40 @@
 import sys
 import os
+import re
 import glob
 import subprocess
 import imageio_ffmpeg
+
+def sanitize_filename(filename):
+    # Remove spaces, parentheses, and special characters for VideoProc/Windows NLE compatibility
+    clean = re.sub(r'[\s\(\)]+', '_', filename)
+    clean = re.sub(r'_+', '_', clean)
+    return clean
 
 def convert_webm_ultra_fluid(input_path, fps=60):
     if not os.path.exists(input_path):
         print(f"Error: File not found -> {input_path}")
         return
     
-    base, _ = os.path.splitext(input_path)
-    output_path = base + "-CHRONO-CONVERTER-BY-ETHERNIUM.mp4"
+    dir_name, full_filename = os.path.split(input_path)
+    base, _ = os.path.splitext(full_filename)
+    
+    clean_base = sanitize_filename(base)
+    output_filename = f"{clean_base}-CHRONO-CONVERTER-BY-ETHERNIUM.mp4"
+    output_path = os.path.join(dir_name, output_filename)
     
     ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
     
-    print(f"=== Processing Ultra-Fluid NLE-Broadcast Master Conversion ({fps} FPS CFR) ===")
+    print(f"=== Processing VideoProc & NLE Ultra-Compatible Conversion ({fps} FPS CFR) ===")
     print(f"   Input:  {input_path}")
     print(f"   Output: {output_path}\n")
     
-    # Broadcast & Video Editor NLE Master Pipeline (Premiere, DaVinci, Final Cut, CapCut):
-    # 1. -vf "fps=fps,format=yuv420p" -> Constant Frame Rate & YUV420p color space for 100% NLE GPU hardware decoding
-    # 2. -fps_mode cfr -> Eliminates all VFR audio-video sync drift & micro-stutters
-    # 3. -crf 16 -> Visually lossless master quality
-    # 4. -ar 48000 -> Broadcast standard 48kHz audio sampling (eliminates Premiere audio sample rate mismatch)
-    # 5. -c:a aac -b:a 320k -> Clean high-bitrate AAC audio
-    # 6. -movflags +faststart -> Places moov atom header at the front of file for instantaneous NLE import
+    # VideoProc & Legacy NLE Master Pipeline:
+    # 1. -profile:v main -level 4.0 -> Forces H.264 Main Profile (100% VideoProc hardware decoder compatibility)
+    # 2. -pix_fmt yuv420p -> Universal 8-bit YUV format accepted by VideoProc/Premiere
+    # 3. -ac 2 -ar 48000 -> Stereo 48kHz AAC (eliminates audio stream import rejection)
+    # 4. -fps_mode cfr -> 60 FPS constant frame rate (eliminates VFR stuttering)
+    # 5. Clean filename without spaces or parentheses (prevents VideoProc C++ path parser error)
     
     cmd = [
         ffmpeg_exe,
@@ -33,20 +43,22 @@ def convert_webm_ultra_fluid(input_path, fps=60):
         "-vf", f"fps={fps},format=yuv420p",
         "-fps_mode", "cfr",
         "-c:v", "libx264",
-        "-preset", "slow",
-        "-crf", "16",
+        "-profile:v", "main",
+        "-level", "4.0",
+        "-preset", "medium",
+        "-crf", "17",
         "-g", str(fps),
         "-bf", "2",
         "-c:a", "aac",
-        "-b:a", "320k",
         "-ar", "48000",
+        "-ac", "2",
         "-movflags", "+faststart",
         output_path
     ]
     
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if result.returncode == 0:
-        print(f"[SUCCESS] Broadcast Master Created: {output_path}")
+        print(f"[SUCCESS] VideoProc Compatible Master Created: {output_path}")
     else:
         print(f"[ERROR] Conversion error:\n{result.stderr}")
 
