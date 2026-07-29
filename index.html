@@ -869,7 +869,7 @@ function startLocalConversion() {
     status.textContent = '✅ Conversion Complete! Exporting video...';
 
     const baseName = selectedConvertFile.name.substring(0, selectedConvertFile.name.lastIndexOf('.'));
-    const convertedFilename = `${baseName}_Converted_${preset}.${targetFmt}`;
+    const convertedFilename = `${baseName}-CHRONO-CONVERTER-BY-ETHERNIUM.${targetFmt}`;
     
     // Download converted file
     downloadBlob(selectedConvertFile, convertedFilename);
