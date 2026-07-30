@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KAPTURA BY ETHERNIUM // SOVEREIGN STUDIO</title>
+  <title>KAPTURA by Ethernium — CHRONO Capture Studio</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Fira+Code:wght@500;700&display=swap');
 
@@ -32,7 +32,7 @@
       box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), inset 0 0 2px rgba(0, 240, 255, 0.2);
     }
 
-    /* Top Brand & Header Badges */
+    /* Header & Badges */
     .top-header {
       display: flex;
       justify-content: space-between;
@@ -89,30 +89,31 @@
     /* Platform Navigation Tabs */
     .platform-tabs {
       display: flex;
-      gap: 14px;
+      gap: 10px;
       margin-top: 6px;
+      flex-wrap: wrap;
     }
 
     .tab-btn {
-      padding: 12px 24px;
+      padding: 12px 20px;
       background: rgba(15, 23, 42, 0.8);
       border: 1px solid #334155;
       color: #94A3B8;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 12px;
       border-radius: 10px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       transition: all 0.3s;
     }
 
     .tab-btn.active {
-      background: rgba(0, 240, 255, 0.12);
+      background: rgba(0, 240, 255, 0.15);
       border-color: #00F0FF;
       color: #00F0FF;
-      box-shadow: 0 0 16px rgba(0, 240, 255, 0.2);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
     }
 
     .red-dot {
@@ -123,15 +124,18 @@
       box-shadow: 0 0 8px #FF4757;
     }
 
-    /* Canvas Viewport */
+    /* Viewport Area */
     .viewport-box {
       width: 100%;
-      height: 520px;
+      height: 480px;
       background: #000000;
       border: 1px solid #1E293B;
       border-radius: 16px;
       position: relative;
       overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     #dna-canvas {
@@ -150,6 +154,7 @@
       font-weight: 700;
       padding: 6px 14px;
       border-radius: 6px;
+      z-index: 5;
     }
 
     .viewport-watermark {
@@ -159,9 +164,24 @@
       font-size: 11px;
       color: rgba(255, 255, 255, 0.4);
       letter-spacing: 2px;
+      z-index: 5;
     }
 
-    /* Control Controls Grid */
+    /* Dynamic Tab Panels */
+    .tab-panel {
+      display: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    .tab-panel.active {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Control Grid */
     .controls-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -194,13 +214,13 @@
       outline: none;
     }
 
-    /* Bottom Action Bar */
+    /* Action Bar */
     .action-bar {
       display: flex;
       gap: 16px;
     }
 
-    .btn-record {
+    .btn-action {
       flex: 1;
       padding: 16px;
       background: #00F0FF;
@@ -215,7 +235,7 @@
       transition: all 0.3s;
     }
 
-    .btn-record:hover {
+    .btn-action:hover {
       background: #00FF9D;
       box-shadow: 0 0 30px rgba(0, 255, 157, 0.6);
     }
@@ -223,11 +243,11 @@
 </head>
 <body>
   <div class="studio-container">
-    <!-- Top Header -->
+    <!-- Header -->
     <div class="top-header">
       <div>
         <span class="brand-logo">KAPTURA</span>
-        <span class="brand-sub">BY ETHERNIUM</span>
+        <span class="brand-sub">BY ETHERNIUM — CHRONO CAPTURE STUDIO</span>
       </div>
       <div class="top-badges">
         <span class="badge-pill">ZERO-COST LOCAL STUDIO</span>
@@ -245,23 +265,65 @@
       <span class="tag-item">• WebCodecs</span>
     </div>
 
-    <!-- Platform Tabs -->
+    <!-- Platform Navigation Tabs -->
     <div class="platform-tabs">
-      <button class="tab-btn active"><span class="red-dot"></span> RECORDER STUDIO</button>
-      <button class="tab-btn">📁 VAULT &amp; HISTORIAL (0)</button>
-      <button class="tab-btn">⚡ V-CONVERTER</button>
-      <button class="tab-btn">👁️ UPSKALETOR AI</button>
+      <button class="tab-btn active" onclick="switchTab(0)"><span class="red-dot"></span> RECORDER STUDIO</button>
+      <button class="tab-btn" onclick="switchTab(1)">🎬 60 FPS CINEMA GIF</button>
+      <button class="tab-btn" onclick="switchTab(2)">🌀 120 FPS SVG VECTOR</button>
+      <button class="tab-btn" onclick="switchTab(3)">📁 VAULT &amp; HISTORIAL (0)</button>
+      <button class="tab-btn" onclick="switchTab(4)">⚡ V-CONVERTER</button>
+      <button class="tab-btn" onclick="switchTab(5)">👁️ UPSKALETOR AI</button>
     </div>
 
-    <!-- Canvas Viewport -->
+    <!-- Main Viewport Box -->
     <div class="viewport-box">
-      <div class="viewport-watermark">ETHERNIUM // SOVEREIGN RECORDER</div>
-      <div class="fps-badge">90 FPS</div>
-      <canvas id="dna-canvas"></canvas>
+      <div class="viewport-watermark" id="view-title">ETHERNIUM // SOVEREIGN RECORDER</div>
+      <div class="fps-badge" id="fps-counter">90 FPS</div>
+
+      <!-- PANEL 0: RECORDER STUDIO (3D DNA Helix Canvas) -->
+      <div class="tab-panel active" id="panel-0">
+        <canvas id="dna-canvas"></canvas>
+      </div>
+
+      <!-- PANEL 1: 60 FPS CINEMA GIF -->
+      <div class="tab-panel" id="panel-1" style="padding: 40px; text-align: center;">
+        <h2 style="font-family: 'Orbitron', monospace; color: #00F0FF; margin-bottom: 16px;">HERRAMIENTA 2: CINEMATIC 60 FPS GIF STUDIO</h2>
+        <p style="color: #94A3B8; max-width: 600px; line-height: 1.6; margin-bottom: 24px;">
+          Motor de generación cinemática HD en bucle a 60 FPS para incrustación directa en la cabecera de tu perfil de GitHub.
+        </p>
+        <img src="exports/kaptura-cinema-loop.gif" style="max-width: 80%; border-radius: 12px; border: 1px solid #00F0FF; box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);" />
+      </div>
+
+      <!-- PANEL 2: 120 FPS SVG VECTOR -->
+      <div class="tab-panel" id="panel-2" style="padding: 40px; text-align: center;">
+        <h2 style="font-family: 'Orbitron', monospace; color: #00FF9D; margin-bottom: 16px;">HERRAMIENTA 3: ZERO-LOSS 120 FPS SVG VECTOR STUDIO</h2>
+        <p style="color: #94A3B8; max-width: 600px; line-height: 1.6; margin-bottom: 24px;">
+          Exportador de animaciones vectoriales SVG nativas puras que se reproducen en vivo dentro de GitHub Markdown a 120 FPS.
+        </p>
+        <img src="exports/kaptura-video-hud.svg" style="max-width: 80%; border-radius: 12px; border: 1px solid #00FF9D; box-shadow: 0 0 30px rgba(0, 255, 157, 0.3);" />
+      </div>
+
+      <!-- PANEL 3: VAULT & HISTORIAL -->
+      <div class="tab-panel" id="panel-3" style="padding: 40px; text-align: center; color: #94A3B8;">
+        <h2 style="font-family: 'Orbitron', monospace; color: #FFD700; margin-bottom: 12px;">📁 RECORDING VAULT &amp; HISTORIAL</h2>
+        <p>No local recordings stored yet. All captures are saved local-first on your machine.</p>
+      </div>
+
+      <!-- PANEL 4: V-CONVERTER -->
+      <div class="tab-panel" id="panel-4" style="padding: 40px; text-align: center; color: #94A3B8;">
+        <h2 style="font-family: 'Orbitron', monospace; color: #7000FF; margin-bottom: 12px;">⚡ HARDWARE ACCELERATED V-CONVERTER</h2>
+        <p>Convert MP4 / WebM / AV1 using local WebCodecs GPU acceleration.</p>
+      </div>
+
+      <!-- PANEL 5: UPSKALETOR AI -->
+      <div class="tab-panel" id="panel-5" style="padding: 40px; text-align: center; color: #94A3B8;">
+        <h2 style="font-family: 'Orbitron', monospace; color: #00F0FF; margin-bottom: 12px;">👁️ UPSKALETOR AI FRAME INTERPOLATOR</h2>
+        <p>AI Spatial Upscaling & 60 FPS -> 120 FPS Frame Interpolation Model active.</p>
+      </div>
     </div>
 
     <!-- Controls Grid -->
-    <div class="controls-grid">
+    <div class="controls-grid" id="controls-bar">
       <div class="control-box">
         <div class="control-label">CAPTURE MODE / ENGINE</div>
         <select class="control-select">
@@ -306,11 +368,35 @@
 
     <!-- Action Bar -->
     <div class="action-bar">
-      <button class="btn-record">🔴 START RECORDING</button>
+      <button class="btn-action" id="action-btn">🔴 START RECORDING</button>
     </div>
   </div>
 
   <script>
+    function switchTab(idx) {
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === idx);
+      });
+
+      document.querySelectorAll('.tab-panel').forEach((panel, i) => {
+        panel.classList.toggle('active', i === idx);
+      });
+
+      const titles = [
+        "ETHERNIUM // SOVEREIGN RECORDER",
+        "KAPTURA TOOL 2 // CINEMATIC 60 FPS GIF STUDIO",
+        "KAPTURA TOOL 3 // ZERO-LOSS 120 FPS SVG VECTOR STUDIO",
+        "ETHERNIUM // RECORDING VAULT",
+        "ETHERNIUM // WEBCODECS V-CONVERTER",
+        "ETHERNIUM // UPSKALETOR AI ENGINE"
+      ];
+      const fpsVals = ["90 FPS", "60 FPS", "120 FPS", "0 FPS", "120 FPS", "120 FPS"];
+
+      document.getElementById('view-title').innerText = titles[idx];
+      document.getElementById('fps-counter').innerText = fpsVals[idx];
+    }
+
+    // 3D DNA Canvas
     const cvs = document.getElementById('dna-canvas');
     const ctx = cvs.getContext('2d');
 
@@ -325,6 +411,11 @@
     const nodes = 20;
 
     function renderDNA() {
+      if (!document.getElementById('panel-0').classList.contains('active')) {
+        requestAnimationFrame(renderDNA);
+        return;
+      }
+
       ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, cvs.width, cvs.height);
 
