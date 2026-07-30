@@ -1,13 +1,14 @@
-import os, sys, time, subprocess
+import argparse
+import os
+import subprocess
 from PIL import Image, ImageDraw
 
-def render_broadcast_master_v2():
-    downloads = os.path.expanduser('~/Downloads')
-    scratch = r'C:\Users\esenc\.gemini\antigravity\scratch\CHRONO-CAPTURE-by-Ethernium'
-    
-    logo_path = os.path.join(scratch, 'master_vector_crisp_logo.png')
-    if not os.path.exists(logo_path):
-        logo_path = r'C:\Users\esenc\.gemini\antigravity\scratch\ethernium_video_demo\master_vector_crisp_logo.png'
+
+def render_broadcast_master_v2(output_dir=None, logo_path=None):
+    root = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.abspath(output_dir or os.path.join(root, "dist", "broadcast"))
+    os.makedirs(output_dir, exist_ok=True)
+    logo_path = os.path.abspath(logo_path or os.path.join(root, "master_vector_crisp_logo.png"))
 
     logo_img = None
     if os.path.exists(logo_path):
@@ -24,8 +25,8 @@ def render_broadcast_master_v2():
     import imageio_ffmpeg
     ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
 
-    out_1080p = os.path.join(downloads, 'Ethernium-Master-1080p-BROADCAST-40s-SILENT.mp4')
-    out_4k = os.path.join(downloads, 'Ethernium-Master-4K-BROADCAST-40s-SILENT.mp4')
+    out_1080p = os.path.join(output_dir, 'Ethernium-Master-1080p-BROADCAST-40s-SILENT.mp4')
+    out_4k = os.path.join(output_dir, 'Ethernium-Master-4K-BROADCAST-40s-SILENT.mp4')
 
     print(f'[1/2] Rendering {total_frames} Frame-Accurate Broadcast RGB24 Frames @ {fps} FPS CFR...', flush=True)
     
@@ -149,7 +150,7 @@ def render_broadcast_master_v2():
         ffmpeg_exe, '-y',
         '-i', out_1080p,
         '-t', str(total_duration),
-        '-vf', 'scale=3840:2160:force_original_aspect_ratio=decrease,pad=3840:2160:(ow-iw)/2:(oh-ih)/2,setpts=N/(60*TB),fps=60,format=yuv420p',
+        '-vf', 'scale=3840:2160:force_original_aspect_ratio=decrease,pad=3840:2160:(ow-iw)/2:(oh-ih)/2,fps=60,format=yuv420p',
         '-fps_mode', 'cfr',
         '-an',
         '-c:v', 'libx264', '-profile:v', 'high', '-level', '5.1',
@@ -160,4 +161,8 @@ def render_broadcast_master_v2():
     print('[SUCCESS 4K 40s BROADCAST MASTER]:', out_4k, f'Size: {os.path.getsize(out_4k)/(1024*1024):.2f} MB', flush=True)
 
 if __name__ == '__main__':
-    render_broadcast_master_v2()
+    parser = argparse.ArgumentParser(description="Render deterministic KAPTURA broadcast masters.")
+    parser.add_argument("--output-dir")
+    parser.add_argument("--logo")
+    args = parser.parse_args()
+    render_broadcast_master_v2(args.output_dir, args.logo)

@@ -1,18 +1,30 @@
-import os, sys, subprocess, imageio_ffmpeg, time
+import argparse
+import os
+import subprocess
+import tempfile
+import time
+
+import imageio_ffmpeg
 from PIL import Image, ImageDraw
 
-def create_fast_broadcast_masters():
-    downloads = os.path.expanduser('~/Downloads')
-    scratch = r'C:\Users\esenc\.gemini\antigravity\scratch\CHRONO-CAPTURE-by-Ethernium'
+
+def create_fast_broadcast_masters(input_path, output_dir=None, logo_path=None):
+    root = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.abspath(output_dir or os.path.join(root, "dist", "broadcast"))
+    os.makedirs(output_dir, exist_ok=True)
+    input_path = os.path.abspath(input_path)
+    if not os.path.isfile(input_path):
+        raise FileNotFoundError(f"Source video not found: {input_path}")
+
+    workspace = tempfile.TemporaryDirectory(prefix="kaptura-broadcast-")
+    scratch = workspace.name
     ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
 
     black_img_path = os.path.join(scratch, 'black_asset.png')
     intro_img_path = os.path.join(scratch, 'intro_logo_asset.png')
     outro_img_path = os.path.join(scratch, 'outro_logo_asset.png')
     
-    logo_path = os.path.join(scratch, 'master_vector_crisp_logo.png')
-    if not os.path.exists(logo_path):
-        logo_path = r'C:\Users\esenc\.gemini\antigravity\scratch\ethernium_video_demo\master_vector_crisp_logo.png'
+    logo_path = os.path.abspath(logo_path or os.path.join(root, "master_vector_crisp_logo.png"))
 
     logo_img = None
     if os.path.exists(logo_path):
@@ -57,9 +69,7 @@ def create_fast_broadcast_masters():
     draw_outro.text((cx - 100, cy + 210), "github.com/SteveBlackbeard", fill=(255, 215, 0))
     img_outro.save(outro_img_path)
 
-    vsrc = os.path.join(downloads, 'clean_source_fixed.mp4')
-    if not os.path.exists(vsrc):
-        vsrc = os.path.join(downloads, 'Ethernium_Master_Capture_2026-07-29T16-59-01-394Z.webm')
+    vsrc = input_path
 
     print('[1/5] Rendering Clip 1 (Black Pre 2.0s)...', flush=True)
     clip_black_pre = os.path.join(scratch, 'c1_black_pre.mp4')
@@ -87,8 +97,8 @@ def create_fast_broadcast_masters():
             clean_p = p.replace('\\', '/')
             f.write(f"file '{clean_p}'\n")
 
-    out_1080p = os.path.join(downloads, 'Ethernium-Master-1080p-BROADCAST-40s-SILENT.mp4')
-    out_4k = os.path.join(downloads, 'Ethernium-Master-4K-BROADCAST-40s-SILENT.mp4')
+    out_1080p = os.path.join(output_dir, 'Ethernium-Master-1080p-BROADCAST-40s-SILENT.mp4')
+    out_4k = os.path.join(output_dir, 'Ethernium-Master-4K-BROADCAST-40s-SILENT.mp4')
 
     print('--- CONCATENATING 1080p BROADCAST MASTER (40.00s) ---', flush=True)
     t0 = time.time()
@@ -104,12 +114,18 @@ def create_fast_broadcast_masters():
     t0 = time.time()
     subprocess.run([
         ffmpeg_exe, '-y', '-i', out_1080p, '-t', '40.00',
-        '-vf', 'scale=3840:2160:force_original_aspect_ratio=decrease,pad=3840:2160:(ow-iw)/2:(oh-ih)/2,setpts=N/(60*TB),fps=60,format=yuv420p',
+        '-vf', 'scale=3840:2160:force_original_aspect_ratio=decrease,pad=3840:2160:(ow-iw)/2:(oh-ih)/2,fps=60,format=yuv420p',
         '-an', '-c:v', 'libx264', '-profile:v', 'high', '-level', '5.1',
         '-preset', 'ultrafast', '-crf', '16', '-movflags', '+faststart',
         out_4k
     ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     print(f'[SUCCESS 4K BROADCAST 40s]: {out_4k} ({os.path.getsize(out_4k)/(1024*1024):.2f} MB in {time.time()-t0:.2f}s)', flush=True)
+    workspace.cleanup()
 
 if __name__ == '__main__':
-    create_fast_broadcast_masters()
+    parser = argparse.ArgumentParser(description="Compose KAPTURA broadcast masters from a source video.")
+    parser.add_argument("input")
+    parser.add_argument("--output-dir")
+    parser.add_argument("--logo")
+    args = parser.parse_args()
+    create_fast_broadcast_masters(args.input, args.output_dir, args.logo)

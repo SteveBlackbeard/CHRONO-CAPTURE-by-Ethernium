@@ -1,76 +1,95 @@
-import sys
-import os
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
 import re
-import glob
 import subprocess
+
 import imageio_ffmpeg
 
-def sanitize_filename(filename):
-    clean = re.sub(r'[\s\(\)]+', '_', filename)
-    clean = re.sub(r'_+', '_', clean)
-    return clean
 
-def convert_webm_ultra_fluid(input_path, fps=60):
-    if not os.path.exists(input_path):
-        print(f"Error: File not found -> {input_path}")
-        return
-    
-    dir_name, full_filename = os.path.split(input_path)
-    base, _ = os.path.splitext(full_filename)
-    
-    clean_base = sanitize_filename(base)
-    output_filename = f"{clean_base}-CHRONO-CONVERTER-BY-ETHERNIUM.mp4"
-    output_path = os.path.join(dir_name, output_filename)
-    
-    ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
-    
-    print(f"=== Mathematical Deterministic Binary PTS Conversion ({fps} FPS Constant Time-Step) ===")
-    print(f"   Input:  {input_path}")
-    print(f"   Output: {output_path}\n")
-    
-    # Deterministic Binary Time-Step Engine (Mathematical PTS Reset):
-    # 1. setpts=N/(fps*TB) -> Symbolic mathematical indexing (Frame N maps to exactly N/60.0 seconds).
-    #    This completely eliminates all variable frame rate (VFR) jitter, browser slowdowns, and dropped frames!
-    # 2. -profile:v main -level 4.0 -pix_fmt yuv420p -> Universal NLE & VideoProc 100% hardware decoding compatibility.
-    # 3. -c:a aac -ar 48000 -ac 2 -> 48kHz stereo broadcast audio.
-    # 4. -movflags +faststart -> Instant index loading.
-    
-    cmd = [
-        ffmpeg_exe,
-        "-y",
-        "-i", input_path,
-        "-vf", f"setpts=N/({fps}*TB),fps={fps},format=yuv420p",
-        "-fps_mode", "cfr",
-        "-c:v", "libx264",
-        "-profile:v", "main",
-        "-level", "4.0",
-        "-preset", "medium",
-        "-crf", "16",
-        "-g", str(fps),
-        "-bf", "2",
-        "-c:a", "aac",
-        "-ar", "48000",
-        "-ac", "2",
-        "-movflags", "+faststart",
-        output_path
+def sanitize_filename(value: str) -> str:
+    clean = re.sub(r"[\s()]+", "_", value)
+    return re.sub(r"_+", "_", clean).strip("_") or "KAPTURA_Master"
+
+
+def convert_to_mp4(
+    input_path: Path,
+    *,
+    fps: int = 60,
+    output_dir: Path | None = None,
+    overwrite: bool = False,
+) -> Path:
+    source = input_path.expanduser().resolve()
+    if not source.is_file():
+        raise FileNotFoundError(f"Source file not found: {source}")
+
+    destination_dir = (output_dir or source.parent).expanduser().resolve()
+    destination_dir.mkdir(parents=True, exist_ok=True)
+    output = destination_dir / f"{sanitize_filename(source.stem)}-KAPTURA-CONVERTER.mp4"
+    if output == source:
+        raise ValueError("Output must not overwrite the input file.")
+    if output.exists() and not overwrite:
+        raise FileExistsError(f"Output already exists: {output}. Use --overwrite to replace it.")
+
+    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+    command = [
+        ffmpeg,
+        "-y" if overwrite else "-n",
+        "-i",
+        str(source),
+        "-vf",
+        f"fps={fps},format=yuv420p",
+        "-fps_mode",
+        "cfr",
+        "-c:v",
+        "libx264",
+        "-profile:v",
+        "high",
+        "-preset",
+        "medium",
+        "-crf",
+        "16",
+        "-g",
+        str(fps),
+        "-bf",
+        "2",
+        "-c:a",
+        "aac",
+        "-ar",
+        "48000",
+        "-ac",
+        "2",
+        "-movflags",
+        "+faststart",
+        str(output),
     ]
-    
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    if result.returncode == 0:
-        print(f"[SUCCESS] Deterministic 60FPS Smooth Master Created: {output_path}")
-    else:
-        print(f"[ERROR] Conversion error:\n{result.stderr}")
+    result = subprocess.run(command, capture_output=True, text=True, check=False)
+    if result.returncode:
+        raise RuntimeError(f"FFmpeg failed with exit code {result.returncode}:\n{result.stderr}")
+
+    print(f"Created: {output}")
+    return output
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Create CFR H.264/AAC copies while preserving source timing."
+    )
+    parser.add_argument("inputs", nargs="+", type=Path)
+    parser.add_argument("--fps", type=int, choices=(24, 25, 30, 50, 60), default=60)
+    parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--overwrite", action="store_true")
+    args = parser.parse_args()
+
+    for source in args.inputs:
+        convert_to_mp4(
+            source,
+            fps=args.fps,
+            output_dir=args.output_dir,
+            overwrite=args.overwrite,
+        )
+
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        for arg in sys.argv[1:]:
-            convert_webm_ultra_fluid(arg)
-    else:
-        # Search for any .webm or .mp4 files in downloads or current dir
-        webm_files = glob.glob(os.path.expanduser("~/Downloads/*.webm")) + glob.glob("*.webm")
-        if webm_files:
-            latest_file = max(webm_files, key=os.path.getmtime)
-            print(f"Found latest video file: {latest_file}")
-            convert_webm_ultra_fluid(latest_file)
-        else:
-            print("Usage: python convert_webm_to_mp4.py <your_video.webm>")
+    main()
