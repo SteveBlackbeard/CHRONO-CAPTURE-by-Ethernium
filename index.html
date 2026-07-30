@@ -321,22 +321,34 @@
     </div>
 
     <!-- CONTROLS GRID -->
-    <div class="controls-grid">
+    <div class="controls-grid" style="grid-template-columns: repeat(5, 1fr);">
       <div class="control-card">
         <div class="control-label">CAPTURE MODE / ENGINE</div>
         <select id="modeSelect">
           <option value="screen">🌐 External Screen / Tab Capture (getDisplayMedia)</option>
-          <option value="dna" selected>🧬 3D DNA Helix (Canvas 120FPS Engine)</option>
-          <option value="binary">💻 Binary Matrix Stream (Canvas 120FPS Engine)</option>
-          <option value="fibonacci">🌀 Fibonacci Vortex (Canvas 120FPS Engine)</option>
+          <option value="dna" selected>🧬 3D DNA Helix (Canvas Engine)</option>
+          <option value="binary">💻 Binary Matrix Stream (Canvas Engine)</option>
+          <option value="fibonacci">🌀 Fibonacci Vortex (Canvas Engine)</option>
+        </select>
+      </div>
+
+      <div class="control-card">
+        <div class="control-label">TARGET RESOLUTION</div>
+        <select id="resSelect" onchange="updateCanvasResolution()">
+          <option value="4k" selected>🔥 4K UHD (3840x2160)</option>
+          <option value="1080p">🎬 Full HD 1080p (1920x1080)</option>
+          <option value="twitter_4k">🐦 Twitter / X 4K Broadcast (3840x2160)</option>
+          <option value="twitter_1080p">🐦 Twitter / X 1080p Broadcast (1920x1080)</option>
+          <option value="youtube_4k">📺 YouTube 4K Master (3840x2160)</option>
+          <option value="720p">📱 720p HD Compact (1280x720)</option>
         </select>
       </div>
 
       <div class="control-card">
         <div class="control-label">ENCODING FRAME RATE</div>
         <select id="fpsSelect">
-          <option value="120" selected>120 FPS (Ultra-Precision 8.33ms)</option>
-          <option value="60">60 FPS (Standard Master)</option>
+          <option value="120">120 FPS (Ultra-Precision 8.33ms)</option>
+          <option value="60" selected>60 FPS (Standard Broadcast Master)</option>
         </select>
       </div>
 
