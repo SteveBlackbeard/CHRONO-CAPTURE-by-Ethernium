@@ -18,3 +18,17 @@ jobs:
           python-version: "3.13"
       - name: Validate KAPTURA product boundary
         run: python tests/validate_kaptura.py
+
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: GIF encoder unit test
+        run: node tests/test_gif_encoder.js
+      - name: Lanczos resampler unit test
+        run: node tests/test_lanczos.js
+      - name: Honesty contract logic test
+        run: node tests/test_contract_logic.js

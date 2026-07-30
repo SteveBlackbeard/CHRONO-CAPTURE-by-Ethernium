@@ -1,46 +1,96 @@
 # 📹 KAPTURA by Ethernium
 
-> **CHRONO Capture Engine · Local-first browser studio**
+> **CHRONO Capture Engine · Local-first browser studio con transcodificación REAL**
 
-KAPTURA conserva CHRONO como su motor de captura. Permite solicitar grabación
-de pantalla o pestañas hasta 4K y 120 FPS con MediaRecorder; la resolución,
-frecuencia y códec efectivos dependen del navegador, el sistema y la fuente.
-El contenido permanece local y no requiere OBS ni plugins.
+KAPTURA captura pantalla o pestañas (hasta 4K/120 FPS solicitados con
+`MediaRecorder`) y ahora **procesa el vídeo de verdad dentro del navegador**:
+reescalado Lanczos-3, re-encode nativo a MP4/WebM y un codificador GIF89a
+propio escrito en JavaScript puro. Todo local, sin OBS, sin plugins y sin subir
+nada a ningún servidor.
+
+La resolución, frecuencia y códec efectivos dependen del navegador, el sistema
+y la fuente. Cuando una capacidad no existe (p. ej. MP4), la app lo dice y usa
+una alternativa real, nunca una simulación.
 
 ---
 
-## ⚡ Características Principales
+## ⚡ Qué es real (y qué no fingimos)
 
-* **Captura 4K UHD solicitada**: objetivos de captura configurables según lo que soporte la fuente.
-* **Pipeline de alta tasa de bits**: perfiles configurables hasta 100 Mbps.
-* **Codecs de Siguiente Generación**: Soporte para VP9 High-Profile, AV1 y H.264 / AVC.
-* **Captura de Audio Loopback Nativo**: Graba el audio del sistema/pestaña sincronizado sin pérdida.
-* **Local-first**: la grabación y el Vault usan el navegador local; KAPTURA no sube el vídeo a un servidor.
-* **Estética HUD Obsidian**: Interfaz futurista con vista previa en tiempo real y telemetría de tasa de transferencia.
-* **UPSKALETOR integrado por frontera segura**: una pestaña conduce al motor
-  independiente sin copiarlo ni fingir que el navegador puede ejecutar PowerShell.
+* **Transcodificación real en el navegador** — `V-CONVERTER` reproduce el vídeo,
+  lo reescala con Lanczos-3 (GPU o CPU) y lo vuelve a codificar con el encoder
+  nativo del navegador. El progreso refleja el trabajo real, no un `setTimeout`.
+* **GIF real** — codificador **GIF89a propio** (`js/gif-encoder.js`): cuantización
+  median-cut + dithering Floyd–Steinberg + compresión **LZW**. Cero librerías.
+* **Escalado matemático real** — **Lanczos-3** en CPU (`js/lanczos.js`) y en GPU
+  vía shader WebGL separable (`js/lanczos-gl.js`).
+* **Handoff honesto de IA** — el escalado neuronal Real-ESRGAN se ejecuta en el
+  motor independiente **UPSKALETOR**; KAPTURA entrega el master **sin alterarlo**
+  y te da el comando firmado. No renombramos un archivo intacto como si fuera 4K.
+* **Telemetría honesta** — el FPS mostrado es **medido**, no un número quemado.
+* **Local-first de verdad** — fuentes **auto-alojadas** (`css/fonts.css`), sin
+  depender de Google Fonts; la Bóveda usa IndexedDB local.
+
+## 🧠 Reparto de trabajo CPU/GPU (frugal)
+
+Híbrido con degradación elegante: se usa la GPU cuando está disponible, pero la
+app **funciona igual sin ella**.
+
+| Tarea | Ruta preferente | Fallback universal |
+| --- | --- | --- |
+| Reescalado de vídeo | GPU (`drawImage` / WebGL Lanczos) | CPU Lanczos-3 |
+| Codificación de vídeo | Encoder HW del navegador (NVENC/AMF/QSV) | Encoder software |
+| Cuantización + LZW del GIF | Web Worker (CPU, sin bloquear la UI) | Hilo principal |
+
+## 🏗️ Arquitectura modular
+
+Sin monolitos. Cada módulo tiene una única responsabilidad y funciona en
+navegador (y varios también en Node para los tests):
+
+```
+js/
+  capabilities.js   detección de GPU/códecs/workers
+  gif-encoder.js    codificador GIF89a puro (median-cut + LZW)
+  lanczos.js        resampler Lanczos-3 en CPU
+  lanczos-gl.js     resampler Lanczos-3 en GPU (WebGL, 2-pass)
+  scaler.js         fachada híbrida GPU/CPU/nativo
+  transcoder.js     re-encode real + toGIF (con worker)
+  gif.worker.js     encode GIF fuera del hilo principal
+  upskaletor.js     upscale Lanczos real / handoff honesto de IA
+  vault.js          capa IndexedDB (con manejo de cuota)
+  capture.js        escenas canvas + captura de pantalla + grabación
+  app.js            orquestación de UI (toasts, progreso, sin lógica de motor)
+css/  hud.css · fonts.css
+fonts/ orbitron.woff2 · firacode.woff2 · inter.woff2  (subset latin, ~96 KB)
+```
 
 ## Motores independientes
 
-- **KAPTURA / CHRONO** captura y conserva el master.
+- **KAPTURA / CHRONO** captura, transcodifica y conserva el master localmente.
 - **[UPSKALETOR-by-Ethernium](https://github.com/SteveBlackbeard/UPSKALETOR-by-Ethernium)**
-  procesa el master mediante IA o Lanczos en su propio repositorio, instalador,
-  CI y releases firmadas.
-
-La pestaña UPSKALETOR realiza un traspaso explícito al operador. Esta separación
-evita duplicar el motor y respeta la barrera de seguridad del navegador.
+  ejecuta el escalado neuronal (Real-ESRGAN) en su propio repositorio, instalador,
+  CI y releases firmadas. La pestaña UPSKALETOR hace un traspaso explícito.
 
 ---
 
-## 🚀 Uso Rápido
+## 🚀 Uso rápido
 
-1. Abre `index.html` en cualquier navegador moderno (Chrome, Edge, Brave).
-2. Haz clic en **🌐 SELECT SOURCE** y elige la pestaña o pantalla que deseas grabar.
-3. Elige el objetivo de frame rate, bitrate y códec que soporte tu navegador.
-4. Haz clic en **🔴 START RECORDING**.
-5. Al finalizar, haz clic en **⏹️ STOP & SAVE 4K** para descargar el archivo `.webm` en calidad Master.
-6. Para mejorar el master, abre la pestaña **UPSKALETOR** y continúa en el
-   motor independiente.
+1. Sirve la carpeta (por los módulos y el worker): `python -m http.server` y abre
+   `http://localhost:8000/` en Chrome, Edge o Brave. *(Abrir el `index.html` con
+   `file://` puede bloquear el Web Worker del GIF; en ese caso cae al hilo
+   principal automáticamente.)*
+2. **🌐 SELECT SOURCE** para elegir pantalla/pestaña, o usa un motor Canvas.
+3. Ajusta resolución, FPS, bitrate y formato.
+4. **🔴 START RECORDING** → **⏹️ STOP & SAVE MASTER** (se descarga y se guarda en la Bóveda).
+5. **⚡ V-CONVERTER**: arrastra un vídeo y transcodifícalo de verdad (MP4/WebM/GIF).
+6. **◆ UPSKALETOR**: perfiles Lanczos se procesan aquí; el perfil IA hace handoff.
+
+## 🧪 Tests
+
+```bash
+node tests/test_gif_encoder.js     # valida el GIF89a generado
+node tests/test_lanczos.js         # valida el resampler Lanczos
+python tests/validate_kaptura.py   # contrato estático del producto
+```
 
 ---
 <sub>Built with sovereignty by Ethernium Sovereign Agent Architecture — Nulla-Labs // Nemeth Corp.</sub>
