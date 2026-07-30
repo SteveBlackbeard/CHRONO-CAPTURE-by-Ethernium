@@ -5,3 +5,6 @@
 concat_list.txt
 node_modules/
 __pycache__/
+dist/
+.venv/
+.tmp/

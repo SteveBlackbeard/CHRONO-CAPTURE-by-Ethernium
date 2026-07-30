@@ -346,10 +346,10 @@
 
   <!-- NAVIGATION TABS -->
   <div class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('tab-recorder', this)">🔴 RECORDER STUDIO</button>
-    <button class="tab-btn" onclick="switchTab('tab-vault', this)">📁 VAULT &amp; HISTORIAL (<span id="vault-count">0</span>)</button>
-    <button class="tab-btn" onclick="switchTab('tab-converter', this)">⚡ V-CONVERTER</button>
-    <button class="tab-btn" onclick="switchTab('tab-upskaletor', this)">◆ UPSKALETOR AI</button>
+    <button class="tab-btn active" id="nav-recorder" onclick="switchTab('tab-recorder', this)">🔴 RECORDER STUDIO</button>
+    <button class="tab-btn" id="nav-vault" onclick="switchTab('tab-vault', this)">📁 VAULT &amp; HISTORIAL (<span id="vault-count">0</span>)</button>
+    <button class="tab-btn" id="nav-converter" onclick="switchTab('tab-converter', this)">⚡ V-CONVERTER</button>
+    <button class="tab-btn" id="nav-upskaletor" onclick="switchTab('tab-upskaletor', this)">◆ UPSKALETOR</button>
   </div>
 
   <!-- TAB 1: RECORDER STUDIO -->
@@ -428,14 +428,14 @@
           💾 EXPORT IN FORMAT ▼
         </button>
         <div class="export-menu" id="exportMenu">
-          <div class="export-item" onclick="exportRecordedAs('mp4')">
-            <span>🎬 Master MP4 Video</span> <span class="fmt-tag">H.264 / AAC</span>
+          <div class="export-item" onclick="downloadLastRecording()">
+            <span>💾 Download original master</span> <span class="fmt-tag">NO RE-ENCODE</span>
           </div>
-          <div class="export-item" onclick="exportRecordedAs('webm')">
-            <span>🌐 WebM Video Stream</span> <span class="fmt-tag">VP9 / Opus</span>
+          <div class="export-item" onclick="prepareLastRecordingHandoff()">
+            <span>◆ Prepare for UPSKALETOR</span> <span class="fmt-tag">HANDOFF</span>
           </div>
-          <div class="export-item" onclick="exportRecordedAs('gif')">
-            <span>🎞️ High-FPS Animated GIF</span> <span class="fmt-tag">Social GIF</span>
+          <div class="export-item" onclick="openConverterTab()">
+            <span>⚡ Open V-CONVERTER</span> <span class="fmt-tag">LOCAL TOOL</span>
           </div>
         </div>
       </div>
@@ -477,26 +477,23 @@
 
     <div class="controls-grid" style="margin-top:24px">
       <div class="control-card">
-        <div class="control-label">INTENDED LOCAL TARGET</div>
+        <div class="control-label">BUNDLED HELPER OUTPUT</div>
         <select id="convFormat">
-          <option value="mp4" selected>🎬 MP4 (Universal H.264 / AAC)</option>
-          <option value="webm">🌐 WebM (VP9 Ultra)</option>
-          <option value="gif">🎞️ Animated GIF (High-FPS)</option>
+          <option value="mp4" selected>🎬 MP4 H.264 / AAC · CFR 60 FPS</option>
         </select>
       </div>
 
       <div class="control-card">
         <div class="control-label">LOCAL TOOL PROFILE</div>
         <select id="convPreset">
-          <option value="master" selected>UPSKALETOR AI / 4K Master</option>
-          <option value="lanczos">UPSKALETOR Lanczos</option>
-          <option value="mp4">Bundled MP4 helper</option>
+          <option value="mp4" selected>Bundled MP4 helper</option>
+          <option value="upskaletor">UPSKALETOR guided handoff</option>
         </select>
       </div>
 
       <div class="control-card" style="grid-column: span 2; display:flex; align-items:flex-end">
         <button class="btn btn-primary" style="width:100%" id="btnConvertNow" onclick="prepareLocalHandoff()">
-          SAVE SOURCE FOR LOCAL PROCESSING
+          PREPARE LOCAL COMMAND
         </button>
       </div>
     </div>
@@ -505,17 +502,19 @@
   <!-- TAB 4: INDEPENDENT UPSCALING ENGINE -->
   <div id="tab-upskaletor" class="tab-content">
     <div class="engine-panel">
-      <div class="engine-kicker">INDEPENDENT ENGINE · DIRECT FILE HANDOFF &amp; AI UPSCALING</div>
+      <div class="engine-kicker">INDEPENDENT ENGINE · GUIDED LOCAL HANDOFF</div>
       <h2 class="engine-title">UPSKALETOR <span style="color:var(--violet)">by Ethernium</span></h2>
       <p class="engine-copy">
-        Arrastra e introduce tus archivos de video directamente para escalarlos al formato deseado (4K UHD AI, 1080p Lanczos, Twitter 4K/1080p, YouTube Master). Preserva los FPS originales, la relación de aspecto y optimiza la tasa de bits para aceleración GPU AMD/NVIDIA.
+        Selecciona el master y KAPTURA preparará un comando y un manifiesto para
+        el motor independiente. El navegador no procesa ni renombra el vídeo:
+        UPSKALETOR ejecuta el escalado local después del traspaso explícito.
       </p>
 
       <!-- INTERACTIVE UPSKALETOR DROPZONE -->
       <div class="dropzone" id="upskaletorDropzone" style="border-color:var(--violet); background:rgba(139,92,246,0.04)" onclick="document.getElementById('upskaletorFileInput').click()">
         <div class="dz-icon" style="color:var(--violet)">◆</div>
-        <div class="dz-title" id="upskaletorDzTitle">DRAG &amp; DROP VIDEO HERE TO UPSCALE WITH UPSKALETOR</div>
-        <div class="dz-sub" id="upskaletorDzSub">Admite .mp4, .webm, .mov, .avi, .mkv · Aceleración por Hardware Local 4K AI</div>
+        <div class="dz-title" id="upskaletorDzTitle">DRAG &amp; DROP A MASTER TO PREPARE THE HANDOFF</div>
+        <div class="dz-sub" id="upskaletorDzSub">Admite .mp4, .webm, .mov, .avi, .mkv · el archivo permanece intacto</div>
         <input type="file" id="upskaletorFileInput" accept="video/*" style="display:none" onchange="handleUpskaletorFileSelect(event)">
       </div>
 
@@ -529,43 +528,42 @@
         <div class="control-card">
           <div class="control-label">FORMATO Y MODO DE ESCALADO</div>
           <select id="upskaletorProfileSelect">
-            <option value="4k_ai" selected>🔥 4K UHD Master (AI Real-ESRGAN / Neural Upscale)</option>
-            <option value="1080p_lanczos">🎬 Full HD 1080p Master (Lanczos Hardware)</option>
-            <option value="twitter_4k">🐦 Twitter / X 4K Broadcast (3840x2160 @ 25Mbps)</option>
-            <option value="twitter_1080p">🐦 Twitter / X 1080p Broadcast (1920x1080 @ 15Mbps)</option>
-            <option value="youtube_4k">📺 YouTube 4K Master (3840x2160 Pro)</option>
-            <option value="720p">📱 720p HD Compact (1280x720)</option>
+            <option value="4k_ai" selected>🔥 4K UHD Master (AI Real-ESRGAN)</option>
+            <option value="4k_lanczos">📺 4K UHD Master (Lanczos)</option>
+            <option value="1080p_lanczos">🎬 Full HD 1080p (Lanczos)</option>
+            <option value="720p_lanczos">📱 720p HD Compact (Lanczos)</option>
           </select>
         </div>
 
         <div class="control-card">
-          <div class="control-label">MOTOR DE PROCESAMIENTO</div>
+          <div class="control-label">ENCODER UPSKALETOR</div>
           <select id="upskaletorEngineSelect">
-            <option value="auto" selected>⚡ Auto-detect GPU (NVIDIA NVENC / AMD AMF / QSV)</option>
-            <option value="ai">🧠 Neural Model AI (High Quality)</option>
-            <option value="cpu">💻 CPU Software Render (Fallback)</option>
+            <option value="Auto" selected>⚡ Auto-detect (AMD AMF / NVIDIA NVENC / CPU)</option>
+            <option value="h264_nvenc">🟢 NVIDIA NVENC</option>
+            <option value="h264_amf">🔴 AMD AMF</option>
+            <option value="libx264">💻 CPU libx264</option>
           </select>
         </div>
 
         <div class="control-card" style="display:flex; align-items:flex-end">
-          <button class="btn btn-primary" style="width:100%; background:linear-gradient(135deg, var(--violet) 0%, #6D28D9 100%)" id="btnUpscaleNow" onclick="startUpskaletorEnhancement()">
-            🚀 START UPSKALETOR ENHANCEMENT
+          <button class="btn btn-primary" style="width:100%; background:linear-gradient(135deg, var(--violet) 0%, #6D28D9 100%)" id="btnUpscaleNow" onclick="copyUpskaletorCommand(false)">
+            📋 COPY PROCESSING COMMAND
           </button>
         </div>
       </div>
 
       <div class="engine-grid" style="margin-top:24px">
         <div class="engine-card">
-          <strong>01 · SELECCIÓN DIRECTA</strong>
-          <span>Arrastra cualquier master capturado o archivo local (.mp4/.webm) directamente al área de arrastre.</span>
+          <strong>01 · SELECCIÓN LOCAL</strong>
+          <span>Selecciona un master capturado o archivo local sin subirlo a ningún servicio.</span>
         </div>
         <div class="engine-card">
-          <strong>02 · FORMATO OBJETIVO</strong>
-          <span>Selecciona entre escalado AI 4K, 1080p Lanczos o perfiles optimizados para transmisión en redes.</span>
+          <strong>02 · COMANDO VERIFICABLE</strong>
+          <span>KAPTURA genera únicamente parámetros que existen en UPSKALETOR v0.6.0.</span>
         </div>
         <div class="engine-card">
-          <strong>03 · PROCESAMIENTO E HISTORIAL</strong>
-          <span>Ejecuta el escalado y guarda automáticamente la metadata procesada en tu Bóveda local.</span>
+          <strong>03 · EJECUCIÓN INDEPENDIENTE</strong>
+          <span>UPSKALETOR procesa una copia de salida y nunca sobrescribe el master original.</span>
         </div>
       </div>
 
@@ -576,11 +574,14 @@
         <a class="engine-link" href="https://github.com/SteveBlackbeard/UPSKALETOR-by-Ethernium/releases" target="_blank" rel="noopener noreferrer">
           <span class="btn btn-secondary">RELEASES FIRMADAS</span>
         </a>
-        <button class="btn btn-secondary" type="button" onclick="copyUpskaletorCommand()">COPIAR COMANDO DE CONSOLA</button>
+        <button class="btn btn-secondary" type="button" onclick="copyUpskaletorCommand(true)">COPIAR DRY-RUN SEGURO</button>
+        <button class="btn btn-secondary" type="button" onclick="downloadUpskaletorManifest()">DESCARGAR MANIFIESTO</button>
       </div>
 
       <div class="boundary-note">
-        LÍMITE DE ARQUITECTURA // KAPTURA es la suite de captura visual y V-CONVERTER la herramienta de paso local. UPSKALETOR procesa y escala archivos locales preservando FPS y tasa de bits.
+        PRODUCT BOUNDARY // KAPTURA is the visual capture studio. UPSKALETOR is
+        the processing engine. They remain separate repositories. No browser
+        transcoding claimed: this tab only prepares an operator-controlled handoff.
       </div>
     </div>
   </div>
@@ -698,16 +699,6 @@ function switchTab(tabId, button) {
   document.getElementById(tabId).classList.add('active');
 }
 
-async function copyUpskaletorCommand() {
-  const command = '.\\upskaletor.ps1 -InputFile .\\video.mp4 -DryRun -Json';
-  try {
-    await navigator.clipboard.writeText(command);
-    alert('UPSKALETOR dry-run command copied.');
-  } catch {
-    window.prompt('Copy the UPSKALETOR dry-run command:', command);
-  }
-}
-
 function toggleExportMenu() {
   document.getElementById('exportMenu').classList.toggle('show');
 }
@@ -736,6 +727,7 @@ let recTimerInterval = null;
 let frameCount = 0;
 let sceneMode = 'dna';
 let lastBlobRecorded = null;
+let lastRecordingFilename = null;
 
 // 3D DNA & Matrix Visual Engine
 let helixAngle = 0;
@@ -939,6 +931,7 @@ function handleRecordingStopped() {
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const filename = `Ethernium_Master_${timestamp}.${ext}`;
+  lastRecordingFilename = filename;
 
   // Download directly
   downloadBlob(blob, filename);
@@ -961,15 +954,32 @@ function downloadBlob(blob, filename) {
   }, 100);
 }
 
-function exportRecordedAs(fmt) {
+function downloadLastRecording() {
   toggleExportMenu();
-  if (!lastBlobRecorded) {
+  if (!lastBlobRecorded || !lastRecordingFilename) {
     alert("No recording available in memory! Please record a video first.");
     return;
   }
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const filename = `Ethernium_Export_${timestamp}.${fmt}`;
-  downloadBlob(lastBlobRecorded, filename);
+  downloadBlob(lastBlobRecorded, lastRecordingFilename);
+}
+
+function openConverterTab() {
+  toggleExportMenu();
+  switchTab('tab-converter', document.getElementById('nav-converter'));
+}
+
+function prepareLastRecordingHandoff() {
+  toggleExportMenu();
+  if (!lastBlobRecorded || !lastRecordingFilename) {
+    alert("No recording available in memory! Please record a video first.");
+    return;
+  }
+  selectedUpskaletorFile = null;
+  document.getElementById('upskaletorDzTitle').textContent =
+    `KAPTURA MASTER READY: ${lastRecordingFilename}`;
+  document.getElementById('upskaletorDzSub').textContent =
+    `Saved locally · ${(lastBlobRecorded.size / (1024*1024)).toFixed(2)} MB · select a profile and copy the command`;
+  switchTab('tab-upskaletor', document.getElementById('nav-upskaletor'));
 }
 
 /* ===== ADVANCED LOCAL CONVERTER ENGINE ===== */
@@ -1002,16 +1012,42 @@ function prepareLocalHandoff() {
     return;
   }
 
-  const targetFmt = document.getElementById('convFormat').value;
   const preset = document.getElementById('convPreset').value;
   const pBg = document.getElementById('progressBarBg');
   const pFill = document.getElementById('progressBarFill');
   const status = document.getElementById('converterStatus');
 
+  if (preset === 'upskaletor') {
+    selectedUpskaletorFile = selectedConvertFile;
+    document.getElementById('upskaletorDzTitle').textContent =
+      `SELECTED FOR UPSKALETOR: ${selectedConvertFile.name}`;
+    document.getElementById('upskaletorDzSub').textContent =
+      `Size: ${(selectedConvertFile.size / (1024*1024)).toFixed(2)} MB · Type: ${selectedConvertFile.type || 'video'}`;
+    switchTab('tab-upskaletor', document.getElementById('nav-upskaletor'));
+    return;
+  }
+
+  const sourceName = escapePowerShellLiteral(selectedConvertFile.name);
+  const command = `python .\\convert_webm_to_mp4.py '.\\${sourceName}'`;
+  const manifest = {
+    schema: "kaptura.local-handoff.v1",
+    createdAt: new Date().toISOString(),
+    source: {
+      name: selectedConvertFile.name,
+      sizeBytes: selectedConvertFile.size,
+      mimeType: selectedConvertFile.type || null
+    },
+    tool: "KAPTURA bundled MP4 helper",
+    output: "MP4 H.264/AAC · CFR 60 FPS",
+    command,
+    note: "Run this command from the extracted KAPTURA folder after placing the source beside it. The browser did not transcode the file."
+  };
+
   pBg.style.display = 'block';
   pFill.style.width = '100%';
-  status.textContent = `SOURCE READY // requested ${targetFmt.toUpperCase()} via ${preset}. V-Converter handoff initialized.`;
-  downloadBlob(selectedConvertFile, selectedConvertFile.name);
+  status.textContent = "HANDOFF READY // command copied and manifest downloaded. Source unchanged.";
+  copyText(command, "V-CONVERTER command copied.");
+  downloadJson(manifest, `${fileStem(selectedConvertFile.name)}-KAPTURA-HANDOFF.json`);
 }
 
 /* ===== UPSKALETOR AI INTERACTIVE HANDOFF & UPSCALING ENGINE ===== */
@@ -1040,52 +1076,105 @@ if (upskaletorDropzone) {
   });
 }
 
-function startUpskaletorEnhancement() {
-  if (!selectedUpskaletorFile && !lastBlobRecorded) {
-    alert("¡Por favor arrastra un archivo de video o realiza una grabación primero!");
+const UPSKALETOR_PROFILES = {
+  "4k_ai": { mode: "AI", width: 3840, height: 2160 },
+  "4k_lanczos": { mode: "Lanczos", width: 3840, height: 2160 },
+  "1080p_lanczos": { mode: "Lanczos", width: 1920, height: 1080 },
+  "720p_lanczos": { mode: "Lanczos", width: 1280, height: 720 }
+};
+
+function fileStem(filename) {
+  const index = filename.lastIndexOf('.');
+  return index > 0 ? filename.slice(0, index) : filename;
+}
+
+function escapePowerShellLiteral(value) {
+  return value.replaceAll("'", "''");
+}
+
+function currentHandoffSource() {
+  if (selectedUpskaletorFile) {
+    return {
+      name: selectedUpskaletorFile.name,
+      sizeBytes: selectedUpskaletorFile.size,
+      mimeType: selectedUpskaletorFile.type || null
+    };
+  }
+  if (lastBlobRecorded && lastRecordingFilename) {
+    return {
+      name: lastRecordingFilename,
+      sizeBytes: lastBlobRecorded.size,
+      mimeType: lastBlobRecorded.type || null
+    };
+  }
+  return null;
+}
+
+function buildUpskaletorCommand(dryRun) {
+  const source = currentHandoffSource();
+  if (!source) return null;
+  const profileName = document.getElementById('upskaletorProfileSelect').value;
+  const profile = UPSKALETOR_PROFILES[profileName];
+  const encoder = document.getElementById('upskaletorEngineSelect').value;
+  const inputName = escapePowerShellLiteral(source.name);
+  const executable = '& "$env:LOCALAPPDATA\\Ethernium\\UPSKALETOR\\upskaletor.ps1"';
+  const args = `-InputFile '.\\${inputName}' -Mode ${profile.mode} -Width ${profile.width} -Height ${profile.height} -TargetFps 0 -Encoder ${encoder}`;
+  return `${executable} ${args}${dryRun ? ' -DryRun -Json' : ''}`;
+}
+
+async function copyText(value, successMessage) {
+  try {
+    await navigator.clipboard.writeText(value);
+    alert(successMessage);
+  } catch {
+    window.prompt(successMessage, value);
+  }
+}
+
+async function copyUpskaletorCommand(dryRun) {
+  const command = buildUpskaletorCommand(dryRun);
+  if (!command) {
+    alert("Select a video or record a KAPTURA master first.");
     return;
   }
-
-  const fileToProcess = selectedUpskaletorFile || lastBlobRecorded;
-  const fileName = selectedUpskaletorFile ? selectedUpskaletorFile.name : 'Master_KAPTURA_Recording.mp4';
-  const profile = document.getElementById('upskaletorProfileSelect').value;
-  const engine = document.getElementById('upskaletorEngineSelect').value;
-
-  const pBg = document.getElementById('upskaletorProgressBarBg');
-  const pFill = document.getElementById('upskaletorProgressBarFill');
   const status = document.getElementById('upskaletorStatus');
+  status.textContent = dryRun
+    ? "DRY-RUN READY // validates dependencies and planned output without processing."
+    : "PROCESSING COMMAND READY // run it locally after installing UPSKALETOR.";
+  await copyText(command, dryRun ? "UPSKALETOR dry-run command copied." : "UPSKALETOR processing command copied.");
+}
 
-  pBg.style.display = 'block';
-  pFill.style.width = '15%';
-  status.textContent = `⚙️ UPSKALETOR AI // Analizando flujo de fotogramas e identificando GPU hardware...`;
+function downloadJson(value, filename) {
+  const payload = `${JSON.stringify(value, null, 2)}\n`;
+  downloadBlob(new Blob([payload], { type: 'application/json' }), filename);
+}
 
-  setTimeout(() => {
-    pFill.style.width = '50%';
-    status.textContent = `🚀 [${engine.toUpperCase()}] Escalando '${fileName}' a perfil ${profile.toUpperCase()}...`;
-  }, 400);
-
-  setTimeout(() => {
-    pFill.style.width = '85%';
-    status.textContent = `✨ Preservando FPS nativos y empaquetando contenedor 4K...`;
-  }, 900);
-
-  setTimeout(() => {
-    pFill.style.width = '100%';
-    const baseName = fileName.substring(0, fileName.lastIndexOf('.')) || 'video';
-    const upscaledName = `${baseName}_UPSKALETOR_${profile.toUpperCase()}.mp4`;
-
-    status.textContent = `✅ [UPSKALETOR COMPLETE] '${upscaledName}' listo para procesamiento local y guardado en Bóveda!`;
-
-    // Download / Save to Vault
-    downloadBlob(fileToProcess, upscaledName);
-    saveToVault(fileToProcess, upscaledName, 'video/mp4', 'N/A');
-
-    // Auto Copy PowerShell execution CLI command
-    const psCmd = `.\\upskaletor.ps1 -InputFile ".\\${fileName}" -Profile "${profile}" -Engine "${engine}" -Out ".\\${upscaledName}"`;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(psCmd).catch(() => {});
-    }
-  }, 1400);
+function downloadUpskaletorManifest() {
+  const source = currentHandoffSource();
+  if (!source) {
+    alert("Select a video or record a KAPTURA master first.");
+    return;
+  }
+  const profileName = document.getElementById('upskaletorProfileSelect').value;
+  const profile = UPSKALETOR_PROFILES[profileName];
+  const encoder = document.getElementById('upskaletorEngineSelect').value;
+  const manifest = {
+    schema: "kaptura.upskaletor-handoff.v1",
+    createdAt: new Date().toISOString(),
+    source,
+    target: { profile: profileName, ...profile, targetFps: 0, encoder },
+    engine: {
+      product: "UPSKALETOR-by-Ethernium",
+      testedRelease: "v0.6.0",
+      repository: "https://github.com/SteveBlackbeard/UPSKALETOR-by-Ethernium"
+    },
+    dryRunCommand: buildUpskaletorCommand(true),
+    processingCommand: buildUpskaletorCommand(false),
+    note: "Place the source in the working folder before running the command. KAPTURA did not process or upload the media."
+  };
+  downloadJson(manifest, `${fileStem(source.name)}-UPSKALETOR-HANDOFF.json`);
+  document.getElementById('upskaletorStatus').textContent =
+    "MANIFEST READY // no media bytes were embedded or uploaded.";
 }
 </script>
 </body>
