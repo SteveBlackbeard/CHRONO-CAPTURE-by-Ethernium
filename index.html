@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1920, height=1080">
-<title>Ethernium Chrono-Capture 4K Studio — Multi-Format & Vault Engine</title>
+<title>KAPTURA by Ethernium — CHRONO Capture Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -283,6 +283,50 @@
     width: 0%; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--emerald));
     transition: width 0.2s ease;
   }
+
+  .engine-panel {
+    padding: 34px;
+    border: 1px solid rgba(139, 92, 246, 0.45);
+    border-radius: 20px;
+    background:
+      radial-gradient(circle at top right, rgba(139, 92, 246, 0.16), transparent 38%),
+      rgba(255,255,255,0.02);
+  }
+  .engine-kicker {
+    font-family: 'Fira Code', monospace;
+    color: var(--violet); letter-spacing: 3px; font-size: 11px; font-weight: 700;
+  }
+  .engine-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 30px; margin: 12px 0; letter-spacing: 3px;
+  }
+  .engine-copy {
+    color: var(--muted); line-height: 1.75; max-width: 920px;
+  }
+  .engine-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin: 28px 0;
+  }
+  .engine-card {
+    padding: 18px; border-radius: 14px; border: 1px solid var(--border);
+    background: rgba(0,0,0,0.25);
+  }
+  .engine-card strong {
+    display: block; font-family: 'Fira Code', monospace; color: var(--white);
+    margin-bottom: 8px;
+  }
+  .engine-card span { color: var(--muted); font-size: 13px; line-height: 1.55; }
+  .engine-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+  .engine-link { text-decoration: none; }
+  .boundary-note {
+    margin-top: 24px; padding: 14px 18px; border-left: 3px solid var(--emerald);
+    background: rgba(0,255,157,0.05); color: var(--muted);
+    font-family: 'Fira Code', monospace; font-size: 12px; line-height: 1.65;
+  }
+  @media (max-width: 900px) {
+    .tab-nav { flex-wrap: wrap; }
+    .controls-grid, .engine-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -292,7 +336,7 @@
   <!-- HEADER -->
   <div class="hud-header">
     <div class="brand-title">
-      <span style="color:var(--cyan)">ETHERNIUM</span> CHRONO-CAPTURE 4K
+      <span style="color:var(--cyan)">KAPTURA</span> CHRONO CAPTURE ENGINE
     </div>
     <div style="display:flex; gap:12px; align-items:center">
       <div class="hud-badge">ZERO-COST LOCAL STUDIO</div>
@@ -302,9 +346,10 @@
 
   <!-- NAVIGATION TABS -->
   <div class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('tab-recorder')">🔴 RECORDER STUDIO</button>
-    <button class="tab-btn" onclick="switchTab('tab-vault')">📁 VAULT &amp; HISTORIAL (<span id="vault-count">0</span>)</button>
-    <button class="tab-btn" onclick="switchTab('tab-converter')">⚡ ADVANCED CONVERTER</button>
+    <button class="tab-btn active" onclick="switchTab('tab-recorder', this)">🔴 RECORDER STUDIO</button>
+    <button class="tab-btn" onclick="switchTab('tab-vault', this)">📁 VAULT &amp; HISTORIAL (<span id="vault-count">0</span>)</button>
+    <button class="tab-btn" onclick="switchTab('tab-converter', this)">⚡ VIDEO HANDOFF</button>
+    <button class="tab-btn" onclick="switchTab('tab-upskaletor', this)">◆ UPSKALETOR</button>
   </div>
 
   <!-- TAB 1: RECORDER STUDIO -->
@@ -400,16 +445,16 @@
     </div>
   </div>
 
-  <!-- TAB 3: ADVANCED CONVERTER ENGINE -->
+  <!-- TAB 3: HONEST LOCAL HANDOFF -->
   <div id="tab-converter" class="tab-content">
     <div style="margin-bottom:20px; font-family:'Fira Code', monospace; font-size:13px; color:var(--muted)">
-      ⚡ CONVERTIDOR LOCAL DE ALTA CALIDAD — CONVIERTE CUALQUIER ARCHIVO WEBM / MP4 / MOV A CUALQUIER FORMATO SIN COSTO DE SERVIDOR
+      ⚡ PREPARA EL ARCHIVO PARA LAS HERRAMIENTAS LOCALES. EL NAVEGADOR NO SIMULA NI AFIRMA UNA TRANSCODIFICACIÓN QUE NO HA EJECUTADO.
     </div>
 
     <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
       <div class="dz-icon">⚡</div>
       <div class="dz-title">DRAG &amp; DROP VIDEO FILE OR CLICK TO BROWSE</div>
-      <div class="dz-sub">Supports .webm, .mp4, .mov, .avi · 100% Local Hardware Accelerated</div>
+      <div class="dz-sub">Supports .webm, .mp4, .mov, .avi · the original media remains unchanged</div>
       <input type="file" id="fileInput" accept="video/*" style="display:none" onchange="handleFileSelect(event)">
     </div>
 
@@ -420,7 +465,7 @@
 
     <div class="controls-grid" style="margin-top:24px">
       <div class="control-card">
-        <div class="control-label">TARGET OUTPUT FORMAT</div>
+        <div class="control-label">INTENDED LOCAL TARGET</div>
         <select id="convFormat">
           <option value="mp4" selected>🎬 MP4 (Universal H.264 / AAC)</option>
           <option value="webm">🌐 WebM (VP9 Ultra)</option>
@@ -429,18 +474,60 @@
       </div>
 
       <div class="control-card">
-        <div class="control-label">QUALITY PRESET</div>
+        <div class="control-label">LOCAL TOOL PROFILE</div>
         <select id="convPreset">
-          <option value="master" selected>🔥 4K Master (Zero Quality Loss)</option>
-          <option value="twitter">🐦 X/Twitter Optimized (1080p 60fps)</option>
-          <option value="discord">💬 Discord Optimized (&lt; 25MB)</option>
+          <option value="master" selected>UPSKALETOR AI / 4K Master</option>
+          <option value="lanczos">UPSKALETOR Lanczos</option>
+          <option value="mp4">Bundled MP4 helper</option>
         </select>
       </div>
 
       <div class="control-card" style="grid-column: span 2; display:flex; align-items:flex-end">
-        <button class="btn btn-primary" style="width:100%" id="btnConvertNow" onclick="startLocalConversion()">
-          🚀 CONVERT FILE NOW (ZERO-COST LOCAL)
+        <button class="btn btn-primary" style="width:100%" id="btnConvertNow" onclick="prepareLocalHandoff()">
+          SAVE SOURCE FOR LOCAL PROCESSING
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: INDEPENDENT UPSCALING ENGINE -->
+  <div id="tab-upskaletor" class="tab-content">
+    <div class="engine-panel">
+      <div class="engine-kicker">INDEPENDENT ENGINE · GOVERNED HANDOFF</div>
+      <h2 class="engine-title">UPSKALETOR <span style="color:var(--violet)">by Ethernium</span></h2>
+      <p class="engine-copy">
+        Enhance a KAPTURA recording with the independent UPSKALETOR engine.
+        It preserves source FPS and optional audio, keeps aspect ratio, detects
+        AMD, NVIDIA or CPU encoding, and offers honest AI and Lanczos modes.
+      </p>
+      <div class="engine-grid">
+        <div class="engine-card">
+          <strong>01 · CAPTURE</strong>
+          <span>Record or download the master from KAPTURA without changing its original media.</span>
+        </div>
+        <div class="engine-card">
+          <strong>02 · OPEN ENGINE</strong>
+          <span>Install UPSKALETOR from its private, signed and independently tested release.</span>
+        </div>
+        <div class="engine-card">
+          <strong>03 · UPSCALE</strong>
+          <span>Drag the master onto UPSKALETOR.cmd or use the PowerShell command for full control.</span>
+        </div>
+      </div>
+      <div class="engine-actions">
+        <a class="engine-link" href="https://github.com/SteveBlackbeard/UPSKALETOR-by-Ethernium" target="_blank" rel="noopener noreferrer">
+          <span class="btn btn-primary">OPEN UPSKALETOR REPOSITORY</span>
+        </a>
+        <a class="engine-link" href="https://github.com/SteveBlackbeard/UPSKALETOR-by-Ethernium/releases" target="_blank" rel="noopener noreferrer">
+          <span class="btn btn-secondary">SIGNED RELEASES</span>
+        </a>
+        <button class="btn btn-secondary" type="button" onclick="copyUpskaletorCommand()">COPY DRY-RUN COMMAND</button>
+      </div>
+      <div class="boundary-note">
+        PRODUCT BOUNDARY // KAPTURA is the visual capture studio. UPSKALETOR is
+        the processing engine. They remain separate repositories and neither
+        duplicates the other's implementation. Browsers cannot securely launch
+        local PowerShell, so this tab performs an explicit operator handoff.
       </div>
     </div>
   </div>
@@ -550,12 +637,22 @@ function clearVault() {
 }
 
 /* ===== TAB SWITCHING ===== */
-function switchTab(tabId) {
+function switchTab(tabId, button) {
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  
-  event.target.classList.add('active');
+
+  button.classList.add('active');
   document.getElementById(tabId).classList.add('active');
+}
+
+async function copyUpskaletorCommand() {
+  const command = '.\\upskaletor.ps1 -InputFile .\\video.mp4 -DryRun -Json';
+  try {
+    await navigator.clipboard.writeText(command);
+    alert('UPSKALETOR dry-run command copied.');
+  } catch {
+    window.prompt('Copy the UPSKALETOR dry-run command:', command);
+  }
 }
 
 function toggleExportMenu() {
@@ -846,7 +943,7 @@ dropzone.addEventListener('drop', (e) => {
   }
 });
 
-function startLocalConversion() {
+function prepareLocalHandoff() {
   if (!selectedConvertFile) {
     alert("Please select or drop a video file first!");
     return;
@@ -859,25 +956,9 @@ function startLocalConversion() {
   const status = document.getElementById('converterStatus');
 
   pBg.style.display = 'block';
-  pFill.style.width = '10%';
-  status.textContent = '⚡ Initializing 100% Local Hardware Transcoder...';
-
-  setTimeout(() => { pFill.style.width = '45%'; status.textContent = '⚙️ Re-encoding video stream locally (Zero Cost)...'; }, 500);
-  setTimeout(() => { pFill.style.width = '85%'; status.textContent = '✨ Finalizing container container & tags...'; }, 1200);
-
-  setTimeout(() => {
-    pFill.style.width = '100%';
-    status.textContent = '✅ Conversion Complete! Exporting video...';
-
-    const baseName = selectedConvertFile.name.substring(0, selectedConvertFile.name.lastIndexOf('.'));
-    const convertedFilename = `${baseName}-CHRONO-CONVERTER-BY-ETHERNIUM.${targetFmt}`;
-    
-    // Download converted file
-    downloadBlob(selectedConvertFile, convertedFilename);
-
-    // Save to Vault
-    saveToVault(selectedConvertFile, convertedFilename, `video/${targetFmt}`, 'N/A');
-  }, 2000);
+  pFill.style.width = '100%';
+  status.textContent = `SOURCE READY // requested ${targetFmt.toUpperCase()} via ${preset}. No browser transcoding claimed.`;
+  downloadBlob(selectedConvertFile, selectedConvertFile.name);
 }
 </script>
 </body>
