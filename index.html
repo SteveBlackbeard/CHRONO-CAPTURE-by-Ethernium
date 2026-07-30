@@ -1,342 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=1920, height=1080">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KAPTURA by Ethernium — CHRONO Capture Studio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg-deep: #010204;
-    --bg-mid: #060912;
-    --bg-card: rgba(10, 14, 26, 0.9);
-    --cyan: #00F0FF;
-    --cyan-glow: rgba(0, 240, 255, 0.4);
-    --emerald: #00FF9D;
-    --emerald-glow: rgba(0, 255, 157, 0.4);
-    --gold: #FFD700;
-    --violet: #8B5CF6;
-    --red: #FF3355;
-    --white: #F8FAFC;
-    --muted: #8892A8;
-    --dim: #3D4663;
-    --border: rgba(255, 255, 255, 0.08);
-  }
-
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg-deep);
-    color: var(--white);
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: flex-start;
-    padding: 30px 20px;
-    overflow-x: hidden;
-  }
-
-  /* HUD CONTAINER */
-  .hud-container {
-    width: 100%; max-width: 1380px;
-    background: linear-gradient(135deg, rgba(8,12,22,0.95), rgba(3,5,10,0.98));
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 32px 40px;
-    box-shadow: 0 30px 90px rgba(0,0,0,0.9), 0 0 1px rgba(255,255,255,0.1);
-    backdrop-filter: blur(20px);
-    position: relative;
-  }
-
-  .hud-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 20px; padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .brand-title {
-    font-family: 'Orbitron', monospace;
-    font-weight: 900; font-size: 24px;
-    letter-spacing: 4px; color: var(--white);
-    display: flex; align-items: center; gap: 12px;
-  }
-
-  /* STUDIO TABS */
-  .tab-nav {
-    display: flex; gap: 12px; margin-bottom: 24px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    padding-bottom: 12px;
-  }
-  .tab-btn {
-    font-family: 'Fira Code', monospace;
-    font-size: 13px; font-weight: 700; letter-spacing: 2px;
-    padding: 10px 22px; border-radius: 12px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border);
-    color: var(--muted); cursor: pointer;
-    transition: all 0.25s ease;
-  }
-  .tab-btn:hover { color: var(--white); background: rgba(255,255,255,0.08); }
-  .tab-btn.active {
-    background: linear-gradient(135deg, rgba(0,240,255,0.15), rgba(0,255,157,0.15));
-    border-color: var(--cyan); color: var(--cyan);
-    box-shadow: 0 0 18px rgba(0,240,255,0.25);
-  }
-
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-
-  /* STAGE FRAME */
-  .stage-frame {
-    width: 100%; height: 500px;
-    background: #000;
-    border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.08);
-    position: relative; overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 24px;
-    box-shadow: inset 0 0 50px rgba(0,0,0,0.95);
-  }
-
-  canvas#renderCanvas {
-    width: 100%; height: 100%;
-    object-fit: contain;
-    display: block;
-  }
-
-  video#previewVideo {
-    width: 100%; height: 100%;
-    object-fit: contain;
-    display: none;
-  }
-
-  .rec-indicator {
-    position: absolute; top: 20px; left: 20px;
-    display: flex; align-items: center; gap: 10px;
-    background: rgba(0,0,0,0.85); padding: 8px 18px;
-    border-radius: 20px; border: 1px solid rgba(255,51,85,0.4);
-    font-family: 'Fira Code', monospace; font-size: 12px;
-    opacity: 0; transition: opacity 0.3s ease; backdrop-filter: blur(10px);
-    z-index: 10;
-  }
-  .rec-indicator.active { opacity: 1; }
-
-  .rec-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--red);
-    box-shadow: 0 0 12px var(--red);
-    animation: recPulse 0.8s infinite alternate;
-  }
-  @keyframes recPulse { 0% { opacity: 0.2; } 100% { opacity: 1; } }
-
-  .fps-badge {
-    position: absolute; top: 20px; right: 20px;
-    background: rgba(0,240,255,0.1); border: 1px solid rgba(0,240,255,0.3);
-    padding: 6px 14px; border-radius: 20px;
-    font-family: 'Fira Code', monospace; font-size: 12px; color: var(--cyan);
-    z-index: 10;
-  }
-
-  /* CONTROLS GRID */
-  .controls-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
-    margin-bottom: 24px;
-  }
-
-  .control-card {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid var(--border);
-    border-radius: 12px; padding: 14px 18px;
-  }
-
-  .control-label {
-    font-family: 'Fira Code', monospace;
-    font-size: 10px; color: var(--muted);
-    letter-spacing: 2px; margin-bottom: 8px;
-  }
-
-  select, input {
-    width: 100%; background: #060912;
-    border: 1px solid rgba(255,255,255,0.1);
-    color: var(--white); padding: 8px 12px;
-    border-radius: 8px; font-family: 'Fira Code', monospace;
-    font-size: 12px; outline: none;
-  }
-
-  /* BUTTONS */
-  .btn-group {
-    display: flex; gap: 16px; align-items: center; justify-content: flex-start;
-  }
-
-  .btn {
-    font-family: 'Orbitron', monospace;
-    font-weight: 700; font-size: 13px; letter-spacing: 2px;
-    padding: 14px 28px; border-radius: 12px;
-    border: none; cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    display: flex; align-items: center; gap: 10px;
-  }
-
-  .btn-primary {
-    background: linear-gradient(135deg, #00F0FF 0%, #00A3FF 100%);
-    color: #000; box-shadow: 0 0 25px var(--cyan-glow);
-  }
-  .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 35px var(--cyan-glow); }
-
-  .btn-secondary {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: var(--white);
-  }
-  .btn-secondary:hover:not(:disabled) { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
-
-  .btn-danger {
-    background: linear-gradient(135deg, #FF3355 0%, #CC0029 100%);
-    color: #FFF; box-shadow: 0 0 20px rgba(255,51,85,0.4);
-  }
-  .btn-danger:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 30px rgba(255,51,85,0.6); }
-
-  .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-
-  /* MULTI-FORMAT DOWNLOAD MODAL / DROPDOWN */
-  .export-dropdown {
-    position: relative; display: inline-block;
-  }
-  .export-menu {
-    display: none; position: absolute; bottom: 110%; left: 0;
-    min-width: 280px; background: rgba(8, 12, 24, 0.98);
-    border: 1px solid var(--cyan); border-radius: 14px;
-    padding: 10px; box-shadow: 0 15px 40px rgba(0,0,0,0.9);
-    z-index: 100; backdrop-filter: blur(25px);
-  }
-  .export-menu.show { display: block; }
-  .export-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px; border-radius: 8px; color: var(--white);
-    font-family: 'Fira Code', monospace; font-size: 12px; cursor: pointer;
-    transition: background 0.2s ease;
-  }
-  .export-item:hover { background: rgba(0,240,255,0.15); color: var(--cyan); }
-  .export-item .fmt-tag {
-    font-weight: 700; color: var(--emerald); font-size: 10px;
-    background: rgba(0,255,157,0.1); padding: 3px 8px; border-radius: 4px;
-  }
-
-  /* TELEMETRY BAR */
-  .telemetry-bar {
-    margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
-    font-family: 'Fira Code', monospace; font-size: 12px; color: var(--muted);
-  }
-  .stat-val { color: var(--white); font-weight: 700; }
-
-  /* VAULT / HISTORIAL GRID */
-  .vault-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px;
-    max-height: 600px; overflow-y: auto; padding-right: 10px;
-  }
-  .vault-card {
-    background: rgba(255,255,255,0.02); border: 1px solid var(--border);
-    border-radius: 16px; padding: 18px; position: relative;
-    transition: border-color 0.25s ease, transform 0.25s ease;
-  }
-  .vault-card:hover { border-color: var(--cyan); transform: translateY(-2px); }
-  .vault-thumb {
-    width: 100%; height: 180px; background: #000; border-radius: 10px;
-    object-fit: cover; margin-bottom: 14px; border: 1px solid rgba(255,255,255,0.05);
-  }
-  .vault-info { font-family: 'Fira Code', monospace; font-size: 12px; color: var(--muted); }
-  .vault-title { font-weight: 700; color: var(--white); font-size: 14px; margin-bottom: 6px; }
-  .vault-actions { display: flex; gap: 10px; margin-top: 14px; }
-  .vault-btn {
-    flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border);
-    background: rgba(255,255,255,0.05); color: var(--white);
-    font-family: 'Fira Code', monospace; font-size: 11px; cursor: pointer; text-align: center;
-    transition: all 0.2s ease;
-  }
-  .vault-btn:hover { background: var(--cyan); color: #000; border-color: var(--cyan); }
-  .vault-btn.del:hover { background: var(--red); color: #FFF; border-color: var(--red); }
-
-  /* ADVANCED CONVERTER DROPZONE */
-  .dropzone {
-    width: 100%; height: 260px;
-    border: 2px dashed rgba(0,240,255,0.4); border-radius: 20px;
-    background: rgba(0,240,255,0.02);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; transition: all 0.3s ease; text-align: center; padding: 20px;
-  }
-  .dropzone:hover, .dropzone.dragover {
-    border-color: var(--emerald); background: rgba(0,255,157,0.06);
-    box-shadow: 0 0 30px rgba(0,255,157,0.2);
-  }
-  .dz-icon { font-size: 48px; margin-bottom: 12px; }
-  .dz-title { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 16px; color: var(--white); margin-bottom: 6px; }
-  .dz-sub { font-family: 'Fira Code', monospace; font-size: 12px; color: var(--muted); }
-
-  .progress-bar-bg {
-    width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px;
-    overflow: hidden; margin-top: 14px; display: none;
-  }
-  .progress-bar-fill {
-    width: 0%; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--emerald));
-    transition: width 0.2s ease;
-  }
-
-  .engine-panel {
-    padding: 34px;
-    border: 1px solid rgba(139, 92, 246, 0.45);
-    border-radius: 20px;
-    background:
-      radial-gradient(circle at top right, rgba(139, 92, 246, 0.16), transparent 38%),
-      rgba(255,255,255,0.02);
-  }
-  .engine-kicker {
-    font-family: 'Fira Code', monospace;
-    color: var(--violet); letter-spacing: 3px; font-size: 11px; font-weight: 700;
-  }
-  .engine-title {
-    font-family: 'Orbitron', monospace;
-    font-size: 30px; margin: 12px 0; letter-spacing: 3px;
-  }
-  .engine-copy {
-    color: var(--muted); line-height: 1.75; max-width: 920px;
-  }
-  .engine-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
-    margin: 28px 0;
-  }
-  .engine-card {
-    padding: 18px; border-radius: 14px; border: 1px solid var(--border);
-    background: rgba(0,0,0,0.25);
-  }
-  .engine-card strong {
-    display: block; font-family: 'Fira Code', monospace; color: var(--white);
-    margin-bottom: 8px;
-  }
-  .engine-card span { color: var(--muted); font-size: 13px; line-height: 1.55; }
-  .engine-actions { display: flex; gap: 14px; flex-wrap: wrap; }
-  .engine-link { text-decoration: none; }
-  .boundary-note {
-    margin-top: 24px; padding: 14px 18px; border-left: 3px solid var(--emerald);
-    background: rgba(0,255,157,0.05); color: var(--muted);
-    font-family: 'Fira Code', monospace; font-size: 12px; line-height: 1.65;
-  }
-  @media (max-width: 900px) {
-    .tab-nav { flex-wrap: wrap; }
-    .controls-grid, .engine-grid { grid-template-columns: 1fr; }
-  }
-</style>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/hud.css">
 </head>
 <body>
 
+<!-- Non-blocking toast notifications -->
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
 <div class="hud-container">
-  
+
   <!-- HEADER -->
   <div class="hud-header">
     <div class="brand-title">
-      <span style="font-size:26px; font-weight:900; letter-spacing:4px; color:var(--white)">KAPTURA</span> <span style="font-size:12px; font-weight:700; letter-spacing:3px; color:var(--cyan); opacity:0.85; margin-left:6px">BY ETHERNIUM</span>
+      <span style="font-size:26px; font-weight:900; letter-spacing:4px; color:var(--white)">KAPTURA</span>
+      <span style="font-size:12px; font-weight:700; letter-spacing:3px; color:var(--cyan); opacity:0.85; margin-left:6px">BY ETHERNIUM</span>
     </div>
     <div style="display:flex; gap:12px; align-items:center">
       <div class="hud-badge">ZERO-COST LOCAL STUDIO</div>
@@ -344,12 +26,15 @@
     </div>
   </div>
 
+  <!-- CAPABILITY CHIPS (honest runtime report) -->
+  <div class="caps-row" id="capsRow"></div>
+
   <!-- NAVIGATION TABS -->
   <div class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('tab-recorder', this)">🔴 RECORDER STUDIO</button>
-    <button class="tab-btn" onclick="switchTab('tab-vault', this)">📁 VAULT &amp; HISTORIAL (<span id="vault-count">0</span>)</button>
-    <button class="tab-btn" onclick="switchTab('tab-converter', this)">⚡ V-CONVERTER</button>
-    <button class="tab-btn" onclick="switchTab('tab-upskaletor', this)">◆ UPSKALETOR AI</button>
+    <button class="tab-btn active" data-tab="tab-recorder">🔴 RECORDER STUDIO</button>
+    <button class="tab-btn" data-tab="tab-vault">📁 VAULT &amp; HISTORIAL (<span id="vault-count">0</span>)</button>
+    <button class="tab-btn" data-tab="tab-converter">⚡ V-CONVERTER</button>
+    <button class="tab-btn" data-tab="tab-upskaletor">◆ UPSKALETOR AI</button>
   </div>
 
   <!-- TAB 1: RECORDER STUDIO -->
@@ -359,228 +44,186 @@
         <div class="rec-dot"></div>
         <span id="recTimer" style="color:var(--red); font-weight:700">REC 00:00:00</span>
       </div>
-      <div class="fps-badge" id="fpsDisplay">120.0 FPS HARDWARE</div>
-
+      <div class="fps-badge" id="fpsDisplay">— FPS</div>
       <canvas id="renderCanvas" width="3840" height="2160"></canvas>
       <video id="previewVideo" autoplay playsinline muted></video>
     </div>
 
-    <!-- CONTROLS GRID -->
     <div class="controls-grid" style="grid-template-columns: repeat(5, 1fr);">
       <div class="control-card">
         <div class="control-label">CAPTURE MODE / ENGINE</div>
         <select id="modeSelect">
-          <option value="screen">🌐 External Screen / Tab Capture (getDisplayMedia)</option>
+          <option value="screen">🌐 Screen / Tab Capture (getDisplayMedia)</option>
           <option value="dna" selected>🧬 3D DNA Helix (Canvas Engine)</option>
           <option value="binary">💻 Binary Matrix Stream (Canvas Engine)</option>
           <option value="fibonacci">🌀 Fibonacci Vortex (Canvas Engine)</option>
         </select>
       </div>
-
       <div class="control-card">
         <div class="control-label">TARGET RESOLUTION</div>
-        <select id="resSelect" onchange="updateCanvasResolution()">
-          <option value="4k" selected>🔥 4K UHD (3840x2160)</option>
-          <option value="1080p">🎬 Full HD 1080p (1920x1080)</option>
-          <option value="twitter_4k">🐦 Twitter / X 4K Broadcast (3840x2160)</option>
-          <option value="twitter_1080p">🐦 Twitter / X 1080p Broadcast (1920x1080)</option>
-          <option value="youtube_4k">📺 YouTube 4K Master (3840x2160)</option>
-          <option value="720p">📱 720p HD Compact (1280x720)</option>
+        <select id="resSelect">
+          <option value="3840x2160" selected>🔥 4K UHD (3840x2160)</option>
+          <option value="1920x1080">🎬 Full HD 1080p (1920x1080)</option>
+          <option value="1280x720">📱 720p HD (1280x720)</option>
         </select>
       </div>
-
       <div class="control-card">
         <div class="control-label">ENCODING FRAME RATE</div>
         <select id="fpsSelect">
-          <option value="120">120 FPS (Ultra-Precision 8.33ms)</option>
-          <option value="60" selected>60 FPS (Standard Broadcast Master)</option>
+          <option value="120">120 FPS (requested)</option>
+          <option value="60" selected>60 FPS (Broadcast)</option>
+          <option value="30">30 FPS (Compact)</option>
         </select>
       </div>
-
       <div class="control-card">
         <div class="control-label">BITRATE TARGET</div>
         <select id="bitrateSelect">
-          <option value="100" selected>100 Mbps (Zero-Loss Master)</option>
-          <option value="80">80 Mbps (Studio Quality)</option>
-          <option value="50">50 Mbps (High Quality)</option>
+          <option value="100" selected>100 Mbps (Master)</option>
+          <option value="80">80 Mbps (Studio)</option>
+          <option value="50">50 Mbps (High)</option>
         </select>
       </div>
-
       <div class="control-card">
         <div class="control-label">MASTER FORMAT</div>
         <select id="codecSelect">
-          <option value="mp4" selected>🎬 MP4 (Universal H.264 / AAC)</option>
-          <option value="vp9">🌐 WebM (VP9 Profile 2)</option>
-          <option value="av1">🚀 WebM (AV1 Next-Gen)</option>
+          <option value="mp4" selected>🎬 MP4 (H.264 / AAC)</option>
+          <option value="vp9">🌐 WebM (VP9)</option>
+          <option value="av1">🚀 WebM (AV1)</option>
         </select>
       </div>
     </div>
 
-    <!-- BUTTONS -->
     <div class="btn-group">
       <button class="btn btn-secondary" id="btnSelectSource">🌐 SELECT SOURCE (TAB/SCREEN)</button>
       <button class="btn btn-primary" id="btnStartRec">🔴 START RECORDING</button>
       <button class="btn btn-danger" id="btnStopRec" disabled>⏹️ STOP &amp; SAVE MASTER</button>
-
-      <!-- MULTI-FORMAT EXPORT DROPDOWN -->
       <div class="export-dropdown">
-        <button class="btn btn-secondary" id="btnExportMenu" onclick="toggleExportMenu()">
-          💾 EXPORT IN FORMAT ▼
-        </button>
+        <button class="btn btn-secondary" id="btnExportMenu">💾 EXPORT IN FORMAT ▼</button>
         <div class="export-menu" id="exportMenu">
-          <div class="export-item" onclick="exportRecordedAs('mp4')">
-            <span>🎬 Master MP4 Video</span> <span class="fmt-tag">H.264 / AAC</span>
-          </div>
-          <div class="export-item" onclick="exportRecordedAs('webm')">
-            <span>🌐 WebM Video Stream</span> <span class="fmt-tag">VP9 / Opus</span>
-          </div>
-          <div class="export-item" onclick="exportRecordedAs('gif')">
-            <span>🎞️ High-FPS Animated GIF</span> <span class="fmt-tag">Social GIF</span>
-          </div>
+          <div class="export-item" data-fmt="mp4"><span>🎬 Master MP4</span> <span class="fmt-tag">real re-encode</span></div>
+          <div class="export-item" data-fmt="webm"><span>🌐 WebM Stream</span> <span class="fmt-tag">real re-encode</span></div>
+          <div class="export-item" data-fmt="gif"><span>🎞️ Animated GIF</span> <span class="fmt-tag">native encoder</span></div>
         </div>
       </div>
     </div>
+    <div class="proc-readout" id="recorderReadout"></div>
   </div>
 
-  <!-- TAB 2: VAULT & HISTORIAL DE GRABACIONES -->
+  <!-- TAB 2: VAULT -->
   <div id="tab-vault" class="tab-content">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px">
       <div style="font-family:'Fira Code', monospace; font-size:13px; color:var(--muted)">
-        HISTORIAL LOCAL ALMACENADO EN DISCO (<span style="color:var(--emerald)">INDEXEDDB LOCAL-FIRST</span>)
+        HISTORIAL LOCAL (<span style="color:var(--emerald)">INDEXEDDB LOCAL-FIRST</span>)
       </div>
-      <button class="btn btn-secondary" style="padding:6px 14px; font-size:11px" onclick="clearVault()">🗑️ CLEAR ALL VAULT</button>
+      <button class="btn btn-secondary" style="padding:6px 14px; font-size:11px" id="btnClearVault">🗑️ CLEAR ALL VAULT</button>
     </div>
-    <div class="vault-grid" id="vaultGrid">
-      <div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--dim); font-family:'Fira Code', monospace">
-        No recordings saved in vault yet. Record a video to store it automatically!
-      </div>
-    </div>
+    <div class="vault-grid" id="vaultGrid"></div>
   </div>
 
-  <!-- TAB 3: HONEST LOCAL HANDOFF -->
+  <!-- TAB 3: V-CONVERTER (REAL in-browser transcoding) -->
   <div id="tab-converter" class="tab-content">
     <div style="margin-bottom:20px; font-family:'Fira Code', monospace; font-size:13px; color:var(--muted)">
-      ⚡ PREPARA EL ARCHIVO PARA LAS HERRAMIENTAS LOCALES. EL NAVEGADOR NO SIMULA NI AFIRMA UNA TRANSCODIFICACIÓN QUE NO HA EJECUTADO.
+      ⚡ TRANSCODIFICACIÓN REAL EN EL NAVEGADOR · reescalado Lanczos + re-encode nativo. El progreso refleja el trabajo real, no una animación.
     </div>
 
-    <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+    <div class="dropzone" id="dropzone">
       <div class="dz-icon">⚡</div>
       <div class="dz-title">DRAG &amp; DROP VIDEO FILE OR CLICK TO BROWSE</div>
-      <div class="dz-sub">Supports .webm, .mp4, .mov, .avi · the original media remains unchanged</div>
-      <input type="file" id="fileInput" accept="video/*" style="display:none" onchange="handleFileSelect(event)">
+      <div class="dz-sub">.webm · .mp4 · .mov · .mkv — el archivo se procesa localmente</div>
+      <input type="file" id="fileInput" accept="video/*" style="display:none">
     </div>
 
-    <div class="progress-bar-bg" id="progressBarBg">
-      <div class="progress-bar-fill" id="progressBarFill"></div>
-    </div>
+    <div class="progress-bar-bg" id="progressBarBg"><div class="progress-bar-fill" id="progressBarFill"></div></div>
     <div id="converterStatus" style="font-family:'Fira Code', monospace; font-size:12px; color:var(--cyan); margin-top:10px; text-align:center"></div>
 
-    <div class="controls-grid" style="margin-top:24px">
+    <div class="controls-grid" style="margin-top:24px; grid-template-columns: repeat(4, 1fr);">
       <div class="control-card">
-        <div class="control-label">INTENDED LOCAL TARGET</div>
+        <div class="control-label">TARGET FORMAT</div>
         <select id="convFormat">
-          <option value="mp4" selected>🎬 MP4 (Universal H.264 / AAC)</option>
-          <option value="webm">🌐 WebM (VP9 Ultra)</option>
-          <option value="gif">🎞️ Animated GIF (High-FPS)</option>
+          <option value="mp4" selected>🎬 MP4 (H.264)</option>
+          <option value="webm">🌐 WebM (VP9)</option>
+          <option value="gif">🎞️ Animated GIF</option>
         </select>
       </div>
-
       <div class="control-card">
-        <div class="control-label">LOCAL TOOL PROFILE</div>
-        <select id="convPreset">
-          <option value="master" selected>UPSKALETOR AI / 4K Master</option>
-          <option value="lanczos">UPSKALETOR Lanczos</option>
-          <option value="mp4">Bundled MP4 helper</option>
+        <div class="control-label">TARGET RESOLUTION</div>
+        <select id="convRes">
+          <option value="source" selected>Keep original</option>
+          <option value="3840x2160">4K UHD</option>
+          <option value="1920x1080">1080p</option>
+          <option value="1280x720">720p</option>
+          <option value="854x480">480p</option>
         </select>
       </div>
-
-      <div class="control-card" style="grid-column: span 2; display:flex; align-items:flex-end">
-        <button class="btn btn-primary" style="width:100%" id="btnConvertNow" onclick="prepareLocalHandoff()">
-          SAVE SOURCE FOR LOCAL PROCESSING
-        </button>
+      <div class="control-card">
+        <div class="control-label">SCALER QUALITY</div>
+        <select id="convQuality">
+          <option value="max" selected>Max (Lanczos-3)</option>
+          <option value="fast">Fast (native GPU)</option>
+        </select>
+      </div>
+      <div class="control-card" style="display:flex; align-items:flex-end">
+        <button class="btn btn-primary" style="width:100%" id="btnConvertNow">CONVERT (REAL)</button>
       </div>
     </div>
   </div>
 
-  <!-- TAB 4: INDEPENDENT UPSCALING ENGINE -->
+  <!-- TAB 4: UPSKALETOR -->
   <div id="tab-upskaletor" class="tab-content">
     <div class="engine-panel">
-      <div class="engine-kicker">INDEPENDENT ENGINE · DIRECT FILE HANDOFF &amp; AI UPSCALING</div>
+      <div class="engine-kicker">SCALING ENGINE · REAL LANCZOS IN-BROWSER + HONEST AI HANDOFF</div>
       <h2 class="engine-title">UPSKALETOR <span style="color:var(--violet)">by Ethernium</span></h2>
       <p class="engine-copy">
-        Arrastra e introduce tus archivos de video directamente para escalarlos al formato deseado (4K UHD AI, 1080p Lanczos, Twitter 4K/1080p, YouTube Master). Preserva los FPS originales, la relación de aspecto y optimiza la tasa de bits para aceleración GPU AMD/NVIDIA.
+        Los perfiles matemáticos (Lanczos 1080p/4K, broadcast social) se procesan <strong>de verdad aquí mismo</strong>.
+        El perfil neuronal Real-ESRGAN se ejecuta en el motor independiente UPSKALETOR: KAPTURA entrega el master sin alterarlo y te da el comando firmado. Sin barras falsas.
       </p>
 
-      <!-- INTERACTIVE UPSKALETOR DROPZONE -->
-      <div class="dropzone" id="upskaletorDropzone" style="border-color:var(--violet); background:rgba(139,92,246,0.04)" onclick="document.getElementById('upskaletorFileInput').click()">
+      <div class="dropzone" id="upskaletorDropzone" style="border-color:var(--violet); background:rgba(139,92,246,0.04)">
         <div class="dz-icon" style="color:var(--violet)">◆</div>
-        <div class="dz-title" id="upskaletorDzTitle">DRAG &amp; DROP VIDEO HERE TO UPSCALE WITH UPSKALETOR</div>
-        <div class="dz-sub" id="upskaletorDzSub">Admite .mp4, .webm, .mov, .avi, .mkv · Aceleración por Hardware Local 4K AI</div>
-        <input type="file" id="upskaletorFileInput" accept="video/*" style="display:none" onchange="handleUpskaletorFileSelect(event)">
+        <div class="dz-title" id="upskaletorDzTitle">DRAG &amp; DROP VIDEO HERE TO UPSCALE</div>
+        <div class="dz-sub" id="upskaletorDzSub">.mp4 · .webm · .mov · .mkv — o usa tu última grabación</div>
+        <input type="file" id="upskaletorFileInput" accept="video/*" style="display:none">
       </div>
 
-      <div class="progress-bar-bg" id="upskaletorProgressBarBg" style="display:none; margin-top:16px">
-        <div class="progress-bar-fill" id="upskaletorProgressBarFill" style="background:linear-gradient(90deg, var(--violet), var(--cyan))"></div>
-      </div>
+      <div class="progress-bar-bg" id="upskaletorProgressBarBg" style="margin-top:16px"><div class="progress-bar-fill" id="upskaletorProgressBarFill" style="background:linear-gradient(90deg, var(--violet), var(--cyan))"></div></div>
       <div id="upskaletorStatus" style="font-family:'Fira Code', monospace; font-size:12px; color:var(--violet); margin-top:10px; text-align:center"></div>
 
-      <!-- TARGET FORMAT SELECTOR GRID -->
       <div class="controls-grid" style="margin-top:20px; grid-template-columns: repeat(3, 1fr);">
         <div class="control-card">
-          <div class="control-label">FORMATO Y MODO DE ESCALADO</div>
+          <div class="control-label">PROFILE</div>
           <select id="upskaletorProfileSelect">
-            <option value="4k_ai" selected>🔥 4K UHD Master (AI Real-ESRGAN / Neural Upscale)</option>
-            <option value="1080p_lanczos">🎬 Full HD 1080p Master (Lanczos Hardware)</option>
-            <option value="twitter_4k">🐦 Twitter / X 4K Broadcast (3840x2160 @ 25Mbps)</option>
-            <option value="twitter_1080p">🐦 Twitter / X 1080p Broadcast (1920x1080 @ 15Mbps)</option>
-            <option value="youtube_4k">📺 YouTube 4K Master (3840x2160 Pro)</option>
-            <option value="720p">📱 720p HD Compact (1280x720)</option>
+            <option value="4k_ai" selected>🔥 4K UHD · Real-ESRGAN AI (handoff)</option>
+            <option value="4k_lanczos">🎬 4K UHD · Lanczos (in-browser)</option>
+            <option value="1080p_lanczos">🎬 1080p · Lanczos (in-browser)</option>
+            <option value="twitter_4k">🐦 Twitter/X 4K</option>
+            <option value="twitter_1080p">🐦 Twitter/X 1080p</option>
+            <option value="youtube_4k">📺 YouTube 4K Master</option>
+            <option value="720p">📱 720p Compact</option>
           </select>
         </div>
-
         <div class="control-card">
-          <div class="control-label">MOTOR DE PROCESAMIENTO</div>
+          <div class="control-label">ENGINE HINT</div>
           <select id="upskaletorEngineSelect">
-            <option value="auto" selected>⚡ Auto-detect GPU (NVIDIA NVENC / AMD AMF / QSV)</option>
-            <option value="ai">🧠 Neural Model AI (High Quality)</option>
-            <option value="cpu">💻 CPU Software Render (Fallback)</option>
+            <option value="auto" selected>⚡ Auto (GPU if available)</option>
+            <option value="ai">🧠 Neural AI (external)</option>
+            <option value="cpu">💻 CPU Lanczos</option>
           </select>
         </div>
-
         <div class="control-card" style="display:flex; align-items:flex-end">
-          <button class="btn btn-primary" style="width:100%; background:linear-gradient(135deg, var(--violet) 0%, #6D28D9 100%)" id="btnUpscaleNow" onclick="startUpskaletorEnhancement()">
-            🚀 START UPSKALETOR ENHANCEMENT
-          </button>
+          <button class="btn btn-primary" style="width:100%; background:linear-gradient(135deg, var(--violet) 0%, #6D28D9 100%)" id="btnUpscaleNow">🚀 START UPSKALETOR</button>
         </div>
       </div>
 
-      <div class="engine-grid" style="margin-top:24px">
-        <div class="engine-card">
-          <strong>01 · SELECCIÓN DIRECTA</strong>
-          <span>Arrastra cualquier master capturado o archivo local (.mp4/.webm) directamente al área de arrastre.</span>
-        </div>
-        <div class="engine-card">
-          <strong>02 · FORMATO OBJETIVO</strong>
-          <span>Selecciona entre escalado AI 4K, 1080p Lanczos o perfiles optimizados para transmisión en redes.</span>
-        </div>
-        <div class="engine-card">
-          <strong>03 · PROCESAMIENTO E HISTORIAL</strong>
-          <span>Ejecuta el escalado y guarda automáticamente la metadata procesada en tu Bóveda local.</span>
-        </div>
+      <div class="engine-actions" style="margin-top:24px">
+        <a class="engine-link" href="https://github.com/SteveBlackbeard/UPSKALETOR-by-Ethernium" target="_blank" rel="noopener noreferrer"><span class="btn btn-primary">OPEN UPSKALETOR REPO</span></a>
+        <a class="engine-link" href="https://github.com/SteveBlackbeard/UPSKALETOR-by-Ethernium/releases" target="_blank" rel="noopener noreferrer"><span class="btn btn-secondary">SIGNED RELEASES</span></a>
+        <button class="btn btn-secondary" type="button" id="btnCopyCmd">COPY CONSOLE COMMAND</button>
       </div>
 
-      <div class="engine-actions">
-        <a class="engine-link" href="https://github.com/SteveBlackbeard/UPSKALETOR-by-Ethernium" target="_blank" rel="noopener noreferrer">
-          <span class="btn btn-primary">ABRIR REPOSITORIO UPSKALETOR</span>
-        </a>
-        <a class="engine-link" href="https://github.com/SteveBlackbeard/UPSKALETOR-by-Ethernium/releases" target="_blank" rel="noopener noreferrer">
-          <span class="btn btn-secondary">RELEASES FIRMADAS</span>
-        </a>
-        <button class="btn btn-secondary" type="button" onclick="copyUpskaletorCommand()">COPIAR COMANDO DE CONSOLA</button>
-      </div>
-
-      <div class="boundary-note">
-        LÍMITE DE ARQUITECTURA // KAPTURA es la suite de captura visual y V-CONVERTER la herramienta de paso local. UPSKALETOR procesa y escala archivos locales preservando FPS y tasa de bits.
+      <div class="boundary-note" id="boundaryNote">
+        PRODUCT BOUNDARY // KAPTURA is the visual capture studio and performs real in-browser transcoding (WebM/MP4 re-encode and a native JavaScript GIF encoder).
+        UPSKALETOR is the processing engine and runs Real-ESRGAN AI as an independent engine. GIF export uses a native JavaScript encoder.
+        LÍMITE DEL PRODUCTO // KAPTURA captura y transcodifica de verdad en el navegador; UPSKALETOR realiza el escalado con IA por separado.
       </div>
     </div>
   </div>
@@ -589,504 +232,20 @@
   <div class="telemetry-bar">
     <div>RECORDED FRAMES: <span class="stat-val" id="statFrames">0</span></div>
     <div>BUFFER SIZE: <span class="stat-val" id="statSize">0.0 MB</span></div>
-    <div>SOURCE: <span class="stat-val" id="statSourceMode" style="color:var(--emerald)">GENETICS ENGINE (120 FPS)</span></div>
+    <div>SOURCE: <span class="stat-val" id="statSourceMode" style="color:var(--emerald)">CANVAS ENGINE</span></div>
   </div>
 </div>
 
-<script>
-/* ===== INDEXEDDB LOCAL VAULT ENGINE ===== */
-const DB_NAME = 'EtherniumChronoVault';
-const DB_VERSION = 1;
-let db = null;
-
-function initDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = (e) => {
-      const dbRef = e.target.result;
-      if (!dbRef.objectStoreNames.contains('recordings')) {
-        dbRef.createObjectStore('recordings', { keyPath: 'id', autoIncrement: true });
-      }
-    };
-    request.onsuccess = (e) => {
-      db = e.target.result;
-      loadVaultItems();
-      resolve(db);
-    };
-    request.onerror = (e) => reject(e);
-  });
-}
-initDB();
-
-function saveToVault(blob, filename, mimeType, durationSec) {
-  if (!db) return;
-  const transaction = db.transaction(['recordings'], 'readwrite');
-  const store = transaction.objectStore('recordings');
-  const record = {
-    timestamp: new Date().toLocaleString(),
-    name: filename,
-    type: mimeType,
-    size: (blob.size / (1024 * 1024)).toFixed(2) + ' MB',
-    duration: durationSec + 's',
-    blob: blob
-  };
-  store.add(record);
-  transaction.oncomplete = () => loadVaultItems();
-}
-
-function loadVaultItems() {
-  if (!db) return;
-  const transaction = db.transaction(['recordings'], 'readonly');
-  const store = transaction.objectStore('recordings');
-  const request = store.getAll();
-  request.onsuccess = () => {
-    const items = request.result;
-    document.getElementById('vault-count').textContent = items.length;
-    renderVaultGrid(items);
-  };
-}
-
-function renderVaultGrid(items) {
-  const grid = document.getElementById('vaultGrid');
-  if (items.length === 0) {
-    grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--dim); font-family:'Fira Code', monospace">
-      No recordings saved in vault yet. Record a video to store it automatically!
-    </div>`;
-    return;
-  }
-
-  grid.innerHTML = items.map(item => {
-    const url = URL.createObjectURL(item.blob);
-    return `
-      <div class="vault-card">
-        <video class="vault-thumb" src="${url}" controls preload="metadata"></video>
-        <div class="vault-title">${item.name}</div>
-        <div class="vault-info">
-          📅 ${item.timestamp} · 💾 ${item.size} · ⏱️ ${item.duration}
-        </div>
-        <div class="vault-actions">
-          <a class="vault-btn" href="${url}" download="${item.name}">💾 DOWNLOAD</a>
-          <button class="vault-btn del" onclick="deleteVaultItem(${item.id})">🗑️ DELETE</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function deleteVaultItem(id) {
-  if (!db) return;
-  const transaction = db.transaction(['recordings'], 'readwrite');
-  const store = transaction.objectStore('recordings');
-  store.delete(id);
-  transaction.oncomplete = () => loadVaultItems();
-}
-
-function clearVault() {
-  if (!db || !confirm("Clear all recorded videos from local vault?")) return;
-  const transaction = db.transaction(['recordings'], 'readwrite');
-  const store = transaction.objectStore('recordings');
-  store.clear();
-  transaction.oncomplete = () => loadVaultItems();
-}
-
-/* ===== TAB SWITCHING ===== */
-function switchTab(tabId, button) {
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-  button.classList.add('active');
-  document.getElementById(tabId).classList.add('active');
-}
-
-async function copyUpskaletorCommand() {
-  const command = '.\\upskaletor.ps1 -InputFile .\\video.mp4 -DryRun -Json';
-  try {
-    await navigator.clipboard.writeText(command);
-    alert('UPSKALETOR dry-run command copied.');
-  } catch {
-    window.prompt('Copy the UPSKALETOR dry-run command:', command);
-  }
-}
-
-function toggleExportMenu() {
-  document.getElementById('exportMenu').classList.toggle('show');
-}
-
-/* ===== CANVAS & RENDERING ENGINE ===== */
-const canvas = document.getElementById('renderCanvas');
-const ctx = canvas.getContext('2d', { alpha: false });
-const video = document.getElementById('previewVideo');
-
-const btnStartRec = document.getElementById('btnStartRec');
-const btnStopRec = document.getElementById('btnStopRec');
-const btnSelectSource = document.getElementById('btnSelectSource');
-const recIndicator = document.getElementById('recIndicator');
-const recTimer = document.getElementById('recTimer');
-const modeSelect = document.getElementById('modeSelect');
-
-const statFrames = document.getElementById('statFrames');
-const statSize = document.getElementById('statSize');
-const statSourceMode = document.getElementById('statSourceMode');
-
-let mediaStream = null;
-let mediaRecorder = null;
-let recordedChunks = [];
-let recStartTime = 0;
-let recTimerInterval = null;
-let frameCount = 0;
-let sceneMode = 'dna';
-let lastBlobRecorded = null;
-
-// 3D DNA & Matrix Visual Engine
-let helixAngle = 0;
-const matrixCols = 80;
-const matrixDrops = new Array(matrixCols).fill(0);
-
-function drawVisualGenetics() {
-  const fpsTarget = parseInt(document.getElementById('fpsSelect')?.value || 60);
-  const t = frameCount * (1.0 / fpsTarget);
-  
-  if (sceneMode === 'dna') {
-    ctx.fillStyle = 'rgba(2, 3, 5, 0.25)';
-    ctx.fillRect(0, 0, 3840, 2160);
-
-    const cx = 1920, cy = 1080;
-    helixAngle += 0.025;
-    const numPairs = 45, radius = 450, length = 2400;
-
-    for (let i = 0; i < numPairs; i++) {
-      const offset = (i / numPairs) * Math.PI * 6 + helixAngle;
-      const x = cx - length / 2 + (i / numPairs) * length;
-      const y1 = cy + Math.sin(offset) * radius;
-      const y2 = cy + Math.sin(offset + Math.PI) * radius;
-      const z1 = Math.cos(offset);
-      const z2 = Math.cos(offset + Math.PI);
-
-      ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2);
-      ctx.lineWidth = 4 + z1 * 2;
-      ctx.strokeStyle = `rgba(0, 240, 255, ${0.4 + z1 * 0.3})`;
-      ctx.shadowColor = '#00F0FF'; ctx.shadowBlur = 15;
-      ctx.stroke();
-
-      ctx.beginPath(); ctx.arc(x, y1, 14 + z1 * 6, 0, Math.PI * 2);
-      ctx.fillStyle = '#00FF9D'; ctx.shadowColor = '#00FF9D'; ctx.shadowBlur = 20; ctx.fill();
-
-      ctx.beginPath(); ctx.arc(x, y2, 14 + z2 * 6, 0, Math.PI * 2);
-      ctx.fillStyle = '#8B5CF6'; ctx.shadowColor = '#8B5CF6'; ctx.shadowBlur = 20; ctx.fill();
-    }
-    ctx.shadowBlur = 0;
-
-  } else if (sceneMode === 'binary') {
-    ctx.fillStyle = 'rgba(1, 2, 4, 0.15)';
-    ctx.fillRect(0, 0, 3840, 2160);
-
-    ctx.font = '28px "JetBrains Mono", monospace';
-    for (let i = 0; i < matrixCols; i++) {
-      const char = String.fromCharCode(0x30 + Math.floor(Math.random() * 2));
-      const x = i * 48, y = matrixDrops[i] * 36;
-      ctx.fillStyle = '#00FF9D'; ctx.shadowColor = '#00FF9D'; ctx.shadowBlur = 10;
-      ctx.fillText(char, x, y);
-      if (y > 2160 && Math.random() > 0.975) matrixDrops[i] = 0;
-      matrixDrops[i]++;
-    }
-    ctx.shadowBlur = 0;
-
-  } else if (sceneMode === 'fibonacci') {
-    const cx = 1920, cy = 1080;
-    const a = 12, b = 0.18;
-    ctx.lineWidth = 3;
-
-    for (let i = 0; i < 400; i++) {
-      const theta = i * 0.1 + t * 0.5;
-      const r = a * Math.exp(b * (i * 0.1));
-      const x = cx + r * Math.cos(theta), y = cy + r * Math.sin(theta);
-      ctx.beginPath(); ctx.arc(x, y, 6 + (i * 0.05), 0, Math.PI * 2);
-      ctx.fillStyle = `hsl(${ (i * 4 + t * 50) % 360 }, 100%, 65%)`;
-      ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 15; ctx.fill();
-    }
-    ctx.shadowBlur = 0;
-  }
-
-  // HUD Overlay
-  ctx.font = '700 32px "Orbitron", monospace';
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillText('ETHERNIUM // 4K @ 120.0 FPS HARDWARE MASTER', 80, 100);
-
-  ctx.font = '24px "Fira Code", monospace';
-  ctx.fillStyle = '#00FF9D';
-  ctx.fillText(`FRAME: ${frameCount} | TIME: ${t.toFixed(3)}s | DELTA: 8.33ms`, 80, 140);
-
-  frameCount++;
-  requestAnimationFrame(drawVisualGenetics);
-}
-requestAnimationFrame(drawVisualGenetics);
-
-/* ===== 🌐 SOURCE SELECTION ===== */
-btnSelectSource.addEventListener('click', async () => {
-  const fps = parseInt(document.getElementById('fpsSelect').value);
-  try {
-    mediaStream = await navigator.mediaDevices.getDisplayMedia({
-      video: {
-        width: { ideal: 3840, max: 3840 },
-        height: { ideal: 2160, max: 2160 },
-        frameRate: { ideal: fps, max: fps }
-      },
-      audio: { echoCancellation: false, noiseSuppression: false }
-    });
-
-    video.srcObject = mediaStream;
-    canvas.style.display = 'none';
-    video.style.display = 'block';
-    sceneMode = 'screen';
-    modeSelect.value = 'screen';
-    statSourceMode.textContent = 'EXTERNAL SCREEN / TAB CAPTURE';
-
-    mediaStream.getVideoTracks()[0].onended = () => {
-      canvas.style.display = 'block';
-      video.style.display = 'none';
-      sceneMode = 'dna';
-      modeSelect.value = 'dna';
-      statSourceMode.textContent = 'GENETICS ENGINE (120 FPS)';
-    };
-  } catch (err) {
-    console.error("Source Selection Error:", err);
-  }
-});
-
-modeSelect.addEventListener('change', (e) => {
-  sceneMode = e.target.value;
-  if (sceneMode === 'screen') {
-    if (!mediaStream) btnSelectSource.click();
-    else {
-      canvas.style.display = 'none';
-      video.style.display = 'block';
-      statSourceMode.textContent = 'EXTERNAL SCREEN / TAB CAPTURE';
-    }
-  } else {
-    canvas.style.display = 'block';
-    video.style.display = 'none';
-    statSourceMode.textContent = `GENETICS ENGINE: ${sceneMode.toUpperCase()}`;
-  }
-});
-
-/* ===== RECORDING CONTROLLER ===== */
-btnStartRec.addEventListener('click', () => {
-  const fpsTarget = parseInt(document.getElementById('fpsSelect').value);
-  const bitrateMbps = parseInt(document.getElementById('bitrateSelect').value);
-  const codecChoice = document.getElementById('codecSelect').value;
-
-  let streamToRecord = (sceneMode === 'screen' && mediaStream) ? mediaStream : canvas.captureStream(fpsTarget);
-
-  let mimeType = 'video/webm;codecs=vp9';
-  if (codecChoice === 'mp4' && MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')) {
-    mimeType = 'video/mp4;codecs=avc1';
-  } else if (codecChoice === 'mp4' && MediaRecorder.isTypeSupported('video/mp4')) {
-    mimeType = 'video/mp4';
-  } else if (codecChoice === 'av1' && MediaRecorder.isTypeSupported('video/webm;codecs=av1')) {
-    mimeType = 'video/webm;codecs=av1';
-  }
-
-  recordedChunks = [];
-  mediaRecorder = new MediaRecorder(streamToRecord, {
-    mimeType: mimeType,
-    videoBitsPerSecond: bitrateMbps * 1000 * 1000
-  });
-
-  mediaRecorder.ondataavailable = (e) => {
-    if (e.data.size > 0) {
-      recordedChunks.push(e.data);
-      const totalBytes = recordedChunks.reduce((acc, c) => acc + c.size, 0);
-      statSize.textContent = `${(totalBytes / (1024 * 1024)).toFixed(1)} MB`;
-    }
-  };
-
-  mediaRecorder.onstop = handleRecordingStopped;
-  mediaRecorder.start(500);
-
-  recStartTime = Date.now();
-  recIndicator.classList.add('active');
-  btnStartRec.disabled = true;
-  btnStopRec.disabled = false;
-
-  const startFrameCounter = frameCount;
-  recTimerInterval = setInterval(() => {
-    const elapsed = Math.floor((Date.now() - recStartTime) / 1000);
-    const hrs = String(Math.floor(elapsed / 3600)).padStart(2, '0');
-    const mins = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
-    const secs = String(elapsed % 60).padStart(2, '0');
-    recTimer.textContent = `REC ${hrs}:${mins}:${secs}`;
-    statFrames.textContent = `${frameCount - startFrameCounter}`;
-  }, 100);
-});
-
-btnStopRec.addEventListener('click', () => {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop();
-  }
-});
-
-function handleRecordingStopped() {
-  clearInterval(recTimerInterval);
-  recIndicator.classList.remove('active');
-  btnStartRec.disabled = false;
-  btnStopRec.disabled = true;
-
-  const isMp4 = mediaRecorder.mimeType.includes('mp4');
-  const ext = isMp4 ? 'mp4' : 'webm';
-  const durationSec = Math.floor((Date.now() - recStartTime) / 1000);
-  const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
-  lastBlobRecorded = blob;
-
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const filename = `Ethernium_Master_${timestamp}.${ext}`;
-
-  // Download directly
-  downloadBlob(blob, filename);
-
-  // Save to Vault Historial
-  saveToVault(blob, filename, mediaRecorder.mimeType, durationSec);
-}
-
-function downloadBlob(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.style.display = 'none';
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => {
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  }, 100);
-}
-
-function exportRecordedAs(fmt) {
-  toggleExportMenu();
-  if (!lastBlobRecorded) {
-    alert("No recording available in memory! Please record a video first.");
-    return;
-  }
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const filename = `Ethernium_Export_${timestamp}.${fmt}`;
-  downloadBlob(lastBlobRecorded, filename);
-}
-
-/* ===== ADVANCED LOCAL CONVERTER ENGINE ===== */
-let selectedConvertFile = null;
-
-function handleFileSelect(e) {
-  const files = e.target.files;
-  if (files && files[0]) {
-    selectedConvertFile = files[0];
-    document.querySelector('.dz-title').textContent = `SELECTED: ${selectedConvertFile.name}`;
-    document.querySelector('.dz-sub').textContent = `Size: ${(selectedConvertFile.size / (1024*1024)).toFixed(2)} MB · Type: ${selectedConvertFile.type}`;
-  }
-}
-
-const dropzone = document.getElementById('dropzone');
-dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
-dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-dropzone.addEventListener('drop', (e) => {
-  e.preventDefault(); dropzone.classList.remove('dragover');
-  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-    selectedConvertFile = e.dataTransfer.files[0];
-    document.querySelector('.dz-title').textContent = `SELECTED: ${selectedConvertFile.name}`;
-    document.querySelector('.dz-sub').textContent = `Size: ${(selectedConvertFile.size / (1024*1024)).toFixed(2)} MB · Type: ${selectedConvertFile.type}`;
-  }
-});
-
-function prepareLocalHandoff() {
-  if (!selectedConvertFile) {
-    alert("Please select or drop a video file first!");
-    return;
-  }
-
-  const targetFmt = document.getElementById('convFormat').value;
-  const preset = document.getElementById('convPreset').value;
-  const pBg = document.getElementById('progressBarBg');
-  const pFill = document.getElementById('progressBarFill');
-  const status = document.getElementById('converterStatus');
-
-  pBg.style.display = 'block';
-  pFill.style.width = '100%';
-  status.textContent = `SOURCE READY // requested ${targetFmt.toUpperCase()} via ${preset}. V-Converter handoff initialized.`;
-  downloadBlob(selectedConvertFile, selectedConvertFile.name);
-}
-
-/* ===== UPSKALETOR AI INTERACTIVE HANDOFF & UPSCALING ENGINE ===== */
-let selectedUpskaletorFile = null;
-
-function handleUpskaletorFileSelect(e) {
-  const files = e.target.files;
-  if (files && files[0]) {
-    selectedUpskaletorFile = files[0];
-    document.getElementById('upskaletorDzTitle').textContent = `SELECTED FOR UPSKALETOR: ${selectedUpskaletorFile.name}`;
-    document.getElementById('upskaletorDzSub').textContent = `Size: ${(selectedUpskaletorFile.size / (1024*1024)).toFixed(2)} MB · Type: ${selectedUpskaletorFile.type || 'video/mp4'}`;
-  }
-}
-
-const upskaletorDropzone = document.getElementById('upskaletorDropzone');
-if (upskaletorDropzone) {
-  upskaletorDropzone.addEventListener('dragover', (e) => { e.preventDefault(); upskaletorDropzone.classList.add('dragover'); });
-  upskaletorDropzone.addEventListener('dragleave', () => upskaletorDropzone.classList.remove('dragover'));
-  upskaletorDropzone.addEventListener('drop', (e) => {
-    e.preventDefault(); upskaletorDropzone.classList.remove('dragover');
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      selectedUpskaletorFile = e.dataTransfer.files[0];
-      document.getElementById('upskaletorDzTitle').textContent = `SELECTED FOR UPSKALETOR: ${selectedUpskaletorFile.name}`;
-      document.getElementById('upskaletorDzSub').textContent = `Size: ${(selectedUpskaletorFile.size / (1024*1024)).toFixed(2)} MB · Type: ${selectedUpskaletorFile.type || 'video/mp4'}`;
-    }
-  });
-}
-
-function startUpskaletorEnhancement() {
-  if (!selectedUpskaletorFile && !lastBlobRecorded) {
-    alert("¡Por favor arrastra un archivo de video o realiza una grabación primero!");
-    return;
-  }
-
-  const fileToProcess = selectedUpskaletorFile || lastBlobRecorded;
-  const fileName = selectedUpskaletorFile ? selectedUpskaletorFile.name : 'Master_KAPTURA_Recording.mp4';
-  const profile = document.getElementById('upskaletorProfileSelect').value;
-  const engine = document.getElementById('upskaletorEngineSelect').value;
-
-  const pBg = document.getElementById('upskaletorProgressBarBg');
-  const pFill = document.getElementById('upskaletorProgressBarFill');
-  const status = document.getElementById('upskaletorStatus');
-
-  pBg.style.display = 'block';
-  pFill.style.width = '15%';
-  status.textContent = `⚙️ UPSKALETOR AI // Analizando flujo de fotogramas e identificando GPU hardware...`;
-
-  setTimeout(() => {
-    pFill.style.width = '50%';
-    status.textContent = `🚀 [${engine.toUpperCase()}] Escalando '${fileName}' a perfil ${profile.toUpperCase()}...`;
-  }, 400);
-
-  setTimeout(() => {
-    pFill.style.width = '85%';
-    status.textContent = `✨ Preservando FPS nativos y empaquetando contenedor 4K...`;
-  }, 900);
-
-  setTimeout(() => {
-    pFill.style.width = '100%';
-    const baseName = fileName.substring(0, fileName.lastIndexOf('.')) || 'video';
-    const upscaledName = `${baseName}_UPSKALETOR_${profile.toUpperCase()}.mp4`;
-
-    status.textContent = `✅ [UPSKALETOR COMPLETE] '${upscaledName}' listo para procesamiento local y guardado en Bóveda!`;
-
-    // Download / Save to Vault
-    downloadBlob(fileToProcess, upscaledName);
-    saveToVault(fileToProcess, upscaledName, 'video/mp4', 'N/A');
-
-    // Auto Copy PowerShell execution CLI command
-    const psCmd = `.\\upskaletor.ps1 -InputFile ".\\${fileName}" -Profile "${profile}" -Engine "${engine}" -Out ".\\${upscaledName}"`;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(psCmd).catch(() => {});
-    }
-  }, 1400);
-}
-</script>
+<!-- Engines (order matters: leaf modules first, app.js last) -->
+<script src="js/capabilities.js"></script>
+<script src="js/gif-encoder.js"></script>
+<script src="js/lanczos.js"></script>
+<script src="js/lanczos-gl.js"></script>
+<script src="js/scaler.js"></script>
+<script src="js/transcoder.js"></script>
+<script src="js/upskaletor.js"></script>
+<script src="js/vault.js"></script>
+<script src="js/capture.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
