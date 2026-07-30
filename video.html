@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KAPTURA Ω // LIVE PRESENTATION SUITE</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Fira+Code:wght@500;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Fira Code', monospace; }
+
+    body {
+      background: #020306;
+      color: #E2E8F0;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #bg-canvas {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 1;
+    }
+
+    .hud-overlay {
+      position: relative;
+      z-index: 10;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 30px;
+      background: radial-gradient(circle at center, rgba(11, 22, 40, 0.4) 0%, rgba(2, 4, 8, 0.85) 100%);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(2, 4, 8, 0.8);
+      border: 1px solid #1E293B;
+      padding: 16px 24px;
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+    }
+
+    .logo-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 24px;
+      font-weight: 900;
+      color: #00F0FF;
+      letter-spacing: 4px;
+      text-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+    }
+
+    .presentation-viewport {
+      flex: 1;
+      margin: 20px 0;
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+
+    .slide-card {
+      flex: 2;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 20px;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-shadow: inset 0 0 30px rgba(0, 240, 255, 0.1);
+      backdrop-filter: blur(16px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 36px;
+      color: #00FF9D;
+      margin-bottom: 20px;
+      letter-spacing: 3px;
+    }
+
+    .slide-body {
+      font-size: 18px;
+      line-height: 1.8;
+      color: #94A3B8;
+    }
+
+    .metrics-sidebar {
+      flex: 1;
+      height: 100%;
+      background: rgba(4, 7, 14, 0.85);
+      border: 1px solid #1E293B;
+      border-radius: 20px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .metric-box {
+      background: rgba(15, 23, 42, 0.6);
+      border-left: 4px solid #00F0FF;
+      padding: 16px;
+      border-radius: 8px;
+    }
+
+    .metric-num {
+      font-size: 28px;
+      font-weight: 700;
+      color: #00FF9D;
+    }
+
+    .controls-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(2, 4, 8, 0.8);
+      border: 1px solid #1E293B;
+      padding: 16px 24px;
+      border-radius: 14px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      background: #0F172A;
+      border: 1px solid #00F0FF;
+      color: #00F0FF;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      background: #00F0FF;
+      color: #020408;
+      box-shadow: 0 0 16px #00F0FF;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="hud-overlay">
+    <div class="header-bar">
+      <div class="logo-title">KAPTURA Ω // PRESENTATION ENGINE</div>
+      <div style="color: #00FF9D; font-size: 13px;">[HERRAMIENTA 1: LIVE WEB PRESENTATION PLAYER]</div>
+    </div>
+
+    <div class="presentation-viewport">
+      <div class="slide-card">
+        <div class="slide-title" id="slide-title">01. SOVEREIGN MOTION RECORDING</div>
+        <div class="slide-body" id="slide-body">
+          KAPTURA es el motor trascendental de captura cinemática y telemetría de ultra-alta velocidad (60–120 FPS). Permite grabar, procesar y exportar interfaces interactivas sin pérdidas de rendimiento.
+        </div>
+      </div>
+
+      <div class="metrics-sidebar">
+        <div style="font-family: 'Orbitron', monospace; font-size: 14px; color: #00F0FF;">TELEMETRY HUD</div>
+        
+        <div class="metric-box">
+          <div style="font-size: 11px; color: #64748B;">GPU FPS STABILITY</div>
+          <div class="metric-num">120.0 FPS</div>
+        </div>
+
+        <div class="metric-box">
+          <div style="font-size: 11px; color: #64748B;">VECTOR LATENCY</div>
+          <div class="metric-num">0.42 ms</div>
+        </div>
+
+        <div class="metric-box">
+          <div style="font-size: 11px; color: #64748B;">EXPORT ENGINE</div>
+          <div class="metric-num">READY</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls-footer">
+      <button class="btn" onclick="prevSlide()">◀ ANTERIOR</button>
+      <div style="color: #94A3B8; font-size: 13px;">SLIDE <span id="slide-idx">1</span> DE 3</div>
+      <button class="btn" onclick="nextSlide()">SIGUIENTE ▶</button>
+    </div>
+  </div>
+
+  <script>
+    const slides = [
+      {
+        title: "01. SOVEREIGN MOTION RECORDING",
+        body: "KAPTURA es el motor trascendental de captura cinemática y telemetría de ultra-alta velocidad (60–120 FPS). Permite grabar, procesar y exportar interfaces interactivas sin pérdidas de rendimiento."
+      },
+      {
+        title: "02. ZERO-LOSS VECTORIAL EXPORT",
+        body: "Integra la Herramienta 2 (Vector Motion Exporter) que convierte cualquier animación interactiva directamente en un archivo SVG vectorial de 120 FPS compatible 100% con GitHub Markdown."
+      },
+      {
+        title: "03. LOCAL-FIRST GPU ENGINE",
+        body: "Sin dependencias de red ni CDNs externas. Ejecución autónoma de máxima velocidad para presentaciones corporativas y HUDs de telemetría."
+      }
+    ];
+
+    let current = 0;
+    function updateSlide() {
+      document.getElementById('slide-title').innerText = slides[current].title;
+      document.getElementById('slide-body').innerText = slides[current].body;
+      document.getElementById('slide-idx').innerText = current + 1;
+    }
+
+    function nextSlide() { current = (current + 1) % slides.length; updateSlide(); }
+    function prevSlide() { current = (current - 1 + slides.length) % slides.length; updateSlide(); }
+
+    const cvs = document.getElementById('bg-canvas');
+    const ctx = cvs.getContext('2d');
+    function resize() { cvs.width = window.innerWidth; cvs.height = window.innerHeight; }
+    window.onresize = resize; resize();
+
+    const particles = Array.from({length: 80}, () => ({
+      x: Math.random() * cvs.width,
+      y: Math.random() * cvs.height,
+      vx: (Math.random() - 0.5) * 1.2,
+      vy: (Math.random() - 0.5) * 1.2,
+      r: Math.random() * 2 + 1
+    }));
+
+    function loop() {
+      ctx.fillStyle = '#020306';
+      ctx.fillRect(0, 0, cvs.width, cvs.height);
+      
+      ctx.fillStyle = '#00F0FF';
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if(p.x < 0 || p.x > cvs.width) p.vx *= -1;
+        if(p.y < 0 || p.y > cvs.height) p.vy *= -1;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+      });
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>
