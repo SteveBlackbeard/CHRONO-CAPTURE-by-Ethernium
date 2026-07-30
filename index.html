@@ -2,37 +2,372 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>KAPTURA-by-Ethernium // Sovereign Suite</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KAPTURA BY ETHERNIUM // SOVEREIGN STUDIO</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Fira+Code:wght@500;700&display=swap');
-    body { background: #020306; color: #E2E8F0; font-family: 'Fira Code', monospace; padding: 40px; }
-    h1 { font-family: 'Orbitron', monospace; color: #00F0FF; margin-bottom: 10px; }
-    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
-    .card { background: rgba(15, 23, 42, 0.8); border: 1px solid #1E293B; border-radius: 16px; padding: 30px; }
-    .card-title { font-family: 'Orbitron', monospace; color: #00FF9D; font-size: 18px; margin-bottom: 14px; }
-    .btn { display: inline-block; padding: 12px 24px; background: #00F0FF; color: #020408; font-weight: 700; text-decoration: none; border-radius: 8px; margin-top: 20px; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Fira Code', monospace; }
+
+    body {
+      background: #040810;
+      color: #E2E8F0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .studio-container {
+      width: 100%;
+      max-width: 1400px;
+      background: rgba(8, 14, 26, 0.95);
+      border: 1px solid #1E293B;
+      border-radius: 20px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), inset 0 0 2px rgba(0, 240, 255, 0.2);
+    }
+
+    /* Top Brand & Header Badges */
+    .top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 26px;
+      font-weight: 900;
+      color: #FFFFFF;
+      letter-spacing: 4px;
+    }
+
+    .brand-sub {
+      font-size: 13px;
+      color: #00F0FF;
+      margin-left: 10px;
+      letter-spacing: 2px;
+    }
+
+    .top-badges {
+      display: flex;
+      gap: 12px;
+    }
+
+    .badge-pill {
+      background: #07101E;
+      border: 1px solid #1E293B;
+      color: #00FF9D;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+    }
+
+    /* Tech Stack Hash Tags */
+    .tech-tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tag-item {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(0, 255, 157, 0.3);
+      color: #00FF9D;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    /* Platform Navigation Tabs */
+    .platform-tabs {
+      display: flex;
+      gap: 14px;
+      margin-top: 6px;
+    }
+
+    .tab-btn {
+      padding: 12px 24px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #334155;
+      color: #94A3B8;
+      font-weight: 700;
+      font-size: 13px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+
+    .tab-btn.active {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: #00F0FF;
+      color: #00F0FF;
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.2);
+    }
+
+    .red-dot {
+      width: 10px;
+      height: 10px;
+      background: #FF4757;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #FF4757;
+    }
+
+    /* Canvas Viewport */
+    .viewport-box {
+      width: 100%;
+      height: 520px;
+      background: #000000;
+      border: 1px solid #1E293B;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #dna-canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .fps-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(2, 4, 8, 0.85);
+      border: 1px solid #00F0FF;
+      color: #00F0FF;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 6px;
+    }
+
+    .viewport-watermark {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 2px;
+    }
+
+    /* Control Controls Grid */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+    }
+
+    .control-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #1E293B;
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-label {
+      font-size: 10px;
+      color: #64748B;
+      letter-spacing: 1px;
+    }
+
+    .control-select {
+      background: #07101E;
+      border: 1px solid #334155;
+      color: #00FF9D;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    /* Bottom Action Bar */
+    .action-bar {
+      display: flex;
+      gap: 16px;
+    }
+
+    .btn-record {
+      flex: 1;
+      padding: 16px;
+      background: #00F0FF;
+      color: #040810;
+      font-weight: 900;
+      font-size: 14px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+      transition: all 0.3s;
+    }
+
+    .btn-record:hover {
+      background: #00FF9D;
+      box-shadow: 0 0 30px rgba(0, 255, 157, 0.6);
+    }
   </style>
 </head>
 <body>
-  <h1>KAPTURA-by-Ethernium</h1>
-  <p style="color: #94A3B8;">Suite Trascendental de Captura Cinemática, Presentación Web y Exportación Vectorial</p>
-
-  <div class="card-grid">
-    <div class="card">
-      <div class="card-title">HERRAMIENTA 1: LIVE WEB PRESENTATION PLAYER</div>
-      <p style="color: #94A3B8; line-height: 1.6;">
-        Motor de reproducción y presentación web interactiva (video.html) desplegable en GitHub Pages con soporte de telemetría y GPU en directo.
-      </p>
-      <a href="video.html" class="btn">LANZAR PRESENTACIÓN VIDEO.HTML ▶</a>
+  <div class="studio-container">
+    <!-- Top Header -->
+    <div class="top-header">
+      <div>
+        <span class="brand-logo">KAPTURA</span>
+        <span class="brand-sub">BY ETHERNIUM</span>
+      </div>
+      <div class="top-badges">
+        <span class="badge-pill">ZERO-COST LOCAL STUDIO</span>
+        <span class="badge-pill" style="color: #00F0FF;">100% PRIVACY LOCAL-FIRST</span>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">HERRAMIENTA 2: VECTOR MOTION EXPORTER (120 FPS)</div>
-      <p style="color: #94A3B8; line-height: 1.6;">
-        Exportador de animaciones vectoriales SVG puras a 120 FPS sin pérdidas para incrustación directa en el README.md de GitHub.
-      </p>
-      <a href="exports/kaptura_vector_presentation.svg" class="btn">VER EXPORTACIÓN SVG VECTORIAL ⚡</a>
+    <!-- Tech Tags -->
+    <div class="tech-tags">
+      <span class="tag-item">• WebGL Lanczos</span>
+      <span class="tag-item">• MP4 encode</span>
+      <span class="tag-item">• WebM/VP9</span>
+      <span class="tag-item">• AV1</span>
+      <span class="tag-item">• Workers</span>
+      <span class="tag-item">• WebCodecs</span>
+    </div>
+
+    <!-- Platform Tabs -->
+    <div class="platform-tabs">
+      <button class="tab-btn active"><span class="red-dot"></span> RECORDER STUDIO</button>
+      <button class="tab-btn">📁 VAULT &amp; HISTORIAL (0)</button>
+      <button class="tab-btn">⚡ V-CONVERTER</button>
+      <button class="tab-btn">👁️ UPSKALETOR AI</button>
+    </div>
+
+    <!-- Canvas Viewport -->
+    <div class="viewport-box">
+      <div class="viewport-watermark">ETHERNIUM // SOVEREIGN RECORDER</div>
+      <div class="fps-badge">90 FPS</div>
+      <canvas id="dna-canvas"></canvas>
+    </div>
+
+    <!-- Controls Grid -->
+    <div class="controls-grid">
+      <div class="control-box">
+        <div class="control-label">CAPTURE MODE / ENGINE</div>
+        <select class="control-select">
+          <option>🧬 3D DNA Helix (Canvas)</option>
+          <option>🌀 Quantum Particle Cloud</option>
+          <option>🖥️ Screen / Window Recorder</option>
+        </select>
+      </div>
+
+      <div class="control-box">
+        <div class="control-label">TARGET RESOLUTION</div>
+        <select class="control-select">
+          <option>🔥 4K UHD (3840x2160)</option>
+          <option>📺 1080p FHD (1920x1080)</option>
+        </select>
+      </div>
+
+      <div class="control-box">
+        <div class="control-label">ENCODING FRAME RATE</div>
+        <select class="control-select">
+          <option>⚡ 60 FPS (Broadcast)</option>
+          <option>🚀 120 FPS (Ultra)</option>
+        </select>
+      </div>
+
+      <div class="control-box">
+        <div class="control-label">BITRATE TARGET</div>
+        <select class="control-select">
+          <option>💎 100 Mbps (Master)</option>
+          <option>⚡ 50 Mbps (High)</option>
+        </select>
+      </div>
+
+      <div class="control-box">
+        <div class="control-label">MASTER FORMAT</div>
+        <select class="control-select">
+          <option>🎬 MP4 (H.264 / AAC)</option>
+          <option>🌐 WebM (VP9 / Opus)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <button class="btn-record">🔴 START RECORDING</button>
     </div>
   </div>
+
+  <script>
+    const cvs = document.getElementById('dna-canvas');
+    const ctx = cvs.getContext('2d');
+
+    function resize() {
+      cvs.width = cvs.clientWidth;
+      cvs.height = cvs.clientHeight;
+    }
+    window.onresize = resize;
+    resize();
+
+    let t = 0;
+    const nodes = 20;
+
+    function renderDNA() {
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+      const cx = cvs.width / 2;
+      const cy = cvs.height / 2;
+      const spacing = 35;
+      const startX = cx - (nodes * spacing) / 2;
+
+      t += 0.04;
+
+      for (let i = 0; i < nodes; i++) {
+        const x = startX + i * spacing;
+        const offset = i * 0.35 + t;
+        
+        const y1 = cy + Math.sin(offset) * 110;
+        const y2 = cy - Math.sin(offset) * 110;
+
+        const z1 = Math.cos(offset);
+        const z2 = -Math.cos(offset);
+
+        ctx.strokeStyle = `rgba(0, 240, 255, ${0.2 + Math.abs(z1)*0.5})`;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(x, y1);
+        ctx.lineTo(x, y2);
+        ctx.stroke();
+
+        const r1 = 6 + z1 * 2;
+        ctx.fillStyle = z1 > 0 ? '#00FF9D' : '#7000FF';
+        ctx.beginPath();
+        ctx.arc(x, y1, r1, 0, Math.PI * 2);
+        ctx.fill();
+
+        const r2 = 6 + z2 * 2;
+        ctx.fillStyle = z2 > 0 ? '#00FF9D' : '#7000FF';
+        ctx.beginPath();
+        ctx.arc(x, y2, r2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      requestAnimationFrame(renderDNA);
+    }
+    renderDNA();
+  </script>
 </body>
 </html>
