@@ -286,6 +286,71 @@
     catch { window.prompt('Copia el comando de UPSKALETOR:', cmd); }
   });
 
+  /* ---- Cinema GIF (real native GIF89a) ---------------------------------- */
+  let cinemaFile = null, cinemaPreviewUrl = null;
+  wireDropzone('cinemaDropzone', 'cinemaFileInput', (f) => {
+    cinemaFile = f;
+    $('cinemaDzTitle').textContent = `SELECTED: ${f.name}`;
+    $('cinemaDzSub').textContent = `${(f.size / (1024 * 1024)).toFixed(2)} MB · ${f.type || 'video'}`;
+  });
+  $('btnCinemaExport').addEventListener('click', async () => {
+    const src = cinemaFile || (lastMaster && lastMaster.blob);
+    if (!src) { toast('Arrastra un vídeo o graba uno primero.', 'error'); return; }
+    const status = $('cinemaStatus');
+    $('btnCinemaExport').disabled = true;
+    try {
+      status.textContent = 'Codificando Cinema GIF real…';
+      const r = await window.KapturaTranscoder.toGIF(src, {
+        caps,
+        fps: parseInt($('cinemaFps').value, 10),
+        width: parseInt($('cinemaWidth').value, 10),
+        dither: $('cinemaDither').value === '1',
+        quality: caps.gpu.webgl ? 'max' : 'fast',
+        onProgress: (p) => { setProgress('cinemaProgressBarBg', 'cinemaProgressBarFill', p); status.textContent = `${Math.round(p * 100)}% (${p < 0.6 ? 'extracción' : 'codificación'})`; },
+      });
+      const name = `Ethernium_Cinema_${stamp()}.gif`;
+      downloadBlob(r.blob, name);
+      if (cinemaPreviewUrl) URL.revokeObjectURL(cinemaPreviewUrl);
+      cinemaPreviewUrl = URL.createObjectURL(r.blob);
+      const img = $('cinemaPreview'); img.src = cinemaPreviewUrl; img.style.display = 'inline-block';
+      status.textContent = `✅ Cinema GIF real: ${r.width}×${r.height}, ${r.frames} frames.`;
+      toast('Cinema GIF real generado.', 'success');
+    } catch (e) { status.textContent = ''; toast(e.message || String(e), 'error'); }
+    finally { $('btnCinemaExport').disabled = false; setTimeout(() => setProgress('cinemaProgressBarBg', 'cinemaProgressBarFill', 0), 800); }
+  });
+
+  /* ---- SVG Vector (real animated SVG) ----------------------------------- */
+  let svgFile = null;
+  wireDropzone('svgDropzone', 'svgFileInput', (f) => {
+    svgFile = f; $('svgSource').value = 'file';
+    $('svgDzTitle').textContent = `SELECTED: ${f.name}`;
+    $('svgDzSub').textContent = `${(f.size / (1024 * 1024)).toFixed(2)} MB · ${f.type || 'video'}`;
+  });
+  $('btnSvgExport').addEventListener('click', async () => {
+    const status = $('svgStatus');
+    const source = $('svgSource').value;
+    $('btnSvgExport').disabled = true;
+    try {
+      let r;
+      const onProgress = (p) => { setProgress('svgProgressBarBg', 'svgProgressBarFill', p); status.textContent = `${Math.round(p * 100)}%`; };
+      if (source === 'scene') {
+        status.textContent = 'Capturando la escena del canvas en SVG animado…';
+        r = await window.KapturaSVGVector.fromCanvas(canvas, {
+          caps, fps: parseInt($('svgFps').value, 10), seconds: parseInt($('svgSeconds').value, 10), onProgress,
+        });
+      } else {
+        const src = svgFile || (lastMaster && lastMaster.blob);
+        if (!src) { toast('Arrastra un vídeo o cambia a "Current canvas scene".', 'error'); $('btnSvgExport').disabled = false; return; }
+        status.textContent = 'Exportando vídeo a SVG animado…';
+        r = await window.KapturaSVGVector.fromVideo(src, { caps, fps: parseInt($('svgFps').value, 10), onProgress });
+      }
+      downloadBlob(r.blob, `Ethernium_Vector_${stamp()}.svg`);
+      status.textContent = `✅ SVG animado real: ${r.width}×${r.height}, ${r.frames} frames.`;
+      toast('SVG Vector real exportado (se reproduce en navegador).', 'success');
+    } catch (e) { status.textContent = ''; toast(e.message || String(e), 'error'); }
+    finally { $('btnSvgExport').disabled = false; setTimeout(() => setProgress('svgProgressBarBg', 'svgProgressBarFill', 0), 800); }
+  });
+
   /* ---- shared dropzone wiring ------------------------------------------- */
   function wireDropzone(zoneId, inputId, onFile) {
     const zone = $(zoneId), input = $(inputId);

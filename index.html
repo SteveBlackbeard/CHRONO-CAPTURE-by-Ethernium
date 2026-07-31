@@ -32,6 +32,8 @@
   <!-- NAVIGATION TABS -->
   <div class="tab-nav">
     <button class="tab-btn active" data-tab="tab-recorder">🔴 RECORDER STUDIO</button>
+    <button class="tab-btn" data-tab="tab-cinema">🎬 CINEMA GIF</button>
+    <button class="tab-btn" data-tab="tab-svg">🌀 SVG VECTOR</button>
     <button class="tab-btn" data-tab="tab-vault">📁 VAULT &amp; HISTORIAL (<span id="vault-count">0</span>)</button>
     <button class="tab-btn" data-tab="tab-converter">⚡ V-CONVERTER</button>
     <button class="tab-btn" data-tab="tab-upskaletor">◆ UPSKALETOR AI</button>
@@ -107,6 +109,72 @@
       </div>
     </div>
     <div class="proc-readout" id="recorderReadout"></div>
+  </div>
+
+  <!-- TAB: CINEMA GIF (real, native GIF89a encoder) -->
+  <div id="tab-cinema" class="tab-content">
+    <div style="margin-bottom:16px; font-family:'Fira Code', monospace; font-size:13px; color:var(--muted)">
+      🎬 CINEMA GIF STUDIO · GIF real de alta calidad con el codificador GIF89a nativo (median-cut + dithering + LZW). Nada de imágenes estáticas: se codifica de verdad.
+    </div>
+    <div class="dropzone" id="cinemaDropzone">
+      <div class="dz-icon">🎬</div>
+      <div class="dz-title" id="cinemaDzTitle">DROP VIDEO · O USA TU ÚLTIMA GRABACIÓN</div>
+      <div class="dz-sub" id="cinemaDzSub">.mp4 · .webm · .mov — salida GIF animado real</div>
+      <input type="file" id="cinemaFileInput" accept="video/*" style="display:none">
+    </div>
+    <div class="progress-bar-bg" id="cinemaProgressBarBg"><div class="progress-bar-fill" id="cinemaProgressBarFill"></div></div>
+    <div id="cinemaStatus" style="font-family:'Fira Code', monospace; font-size:12px; color:var(--emerald); margin-top:10px; text-align:center"></div>
+    <div class="controls-grid" style="margin-top:20px; grid-template-columns: repeat(4, 1fr);">
+      <div class="control-card">
+        <div class="control-label">FRAME RATE</div>
+        <select id="cinemaFps"><option value="24" selected>24 fps (cinema)</option><option value="18">18 fps</option><option value="12">12 fps (compact)</option></select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">WIDTH</div>
+        <select id="cinemaWidth"><option value="640" selected>640 px</option><option value="480">480 px</option><option value="320">320 px</option></select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">DITHER</div>
+        <select id="cinemaDither"><option value="1" selected>Floyd–Steinberg</option><option value="0">None (flat)</option></select>
+      </div>
+      <div class="control-card" style="display:flex; align-items:flex-end">
+        <button class="btn btn-primary" style="width:100%" id="btnCinemaExport">RENDER GIF (REAL)</button>
+      </div>
+    </div>
+    <div style="margin-top:18px; text-align:center"><img id="cinemaPreview" alt="" style="max-width:80%; border-radius:12px; display:none; border:1px solid var(--emerald)"></div>
+  </div>
+
+  <!-- TAB: SVG VECTOR (real animated SVG exporter) -->
+  <div id="tab-svg" class="tab-content">
+    <div style="margin-bottom:16px; font-family:'Fira Code', monospace; font-size:13px; color:var(--muted)">
+      🌀 SVG VECTOR STUDIO · exporta un SVG animado REAL (SMIL flip-book) que se reproduce en cualquier navegador sin JavaScript.
+      <span style="color:var(--gold)">Nota honesta:</span> GitHub sanea SMIL en imágenes embebidas — para GitHub usa el Cinema GIF; el SVG se reproduce en navegador y standalone.
+    </div>
+    <div class="dropzone" id="svgDropzone" style="border-color:var(--emerald)">
+      <div class="dz-icon" style="color:var(--emerald)">🌀</div>
+      <div class="dz-title" id="svgDzTitle">DROP VIDEO · O EXPORTA LA ESCENA ACTUAL DEL CANVAS</div>
+      <div class="dz-sub" id="svgDzSub">salida .svg animado — vectorial-friendly, escalable</div>
+      <input type="file" id="svgFileInput" accept="video/*" style="display:none">
+    </div>
+    <div class="progress-bar-bg" id="svgProgressBarBg"><div class="progress-bar-fill" id="svgProgressBarFill"></div></div>
+    <div id="svgStatus" style="font-family:'Fira Code', monospace; font-size:12px; color:var(--emerald); margin-top:10px; text-align:center"></div>
+    <div class="controls-grid" style="margin-top:20px; grid-template-columns: repeat(4, 1fr);">
+      <div class="control-card">
+        <div class="control-label">SOURCE</div>
+        <select id="svgSource"><option value="scene" selected>Current canvas scene</option><option value="file">Dropped / recorded video</option></select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">FRAME RATE</div>
+        <select id="svgFps"><option value="12" selected>12 fps</option><option value="8">8 fps</option><option value="18">18 fps</option></select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">SECONDS (scene)</div>
+        <select id="svgSeconds"><option value="3" selected>3 s</option><option value="5">5 s</option><option value="2">2 s</option></select>
+      </div>
+      <div class="control-card" style="display:flex; align-items:flex-end">
+        <button class="btn btn-primary" style="width:100%" id="btnSvgExport">EXPORT SVG (REAL)</button>
+      </div>
+    </div>
   </div>
 
   <!-- TAB 2: VAULT -->
@@ -243,6 +311,7 @@
 <script src="js/lanczos-gl.js"></script>
 <script src="js/scaler.js"></script>
 <script src="js/transcoder.js"></script>
+<script src="js/svg-vector.js"></script>
 <script src="js/upskaletor.js"></script>
 <script src="js/vault.js"></script>
 <script src="js/capture.js"></script>
