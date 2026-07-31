@@ -1,464 +1,320 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KAPTURA by Ethernium — CHRONO Capture Studio</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Fira+Code:wght@500;700&display=swap');
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Fira Code', monospace; }
-
-    body {
-      background: #040810;
-      color: #E2E8F0;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .studio-container {
-      width: 100%;
-      max-width: 1400px;
-      background: rgba(8, 14, 26, 0.95);
-      border: 1px solid #1E293B;
-      border-radius: 20px;
-      padding: 30px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), inset 0 0 2px rgba(0, 240, 255, 0.2);
-    }
-
-    /* Header & Badges */
-    .top-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .brand-logo {
-      font-family: 'Orbitron', monospace;
-      font-size: 26px;
-      font-weight: 900;
-      color: #FFFFFF;
-      letter-spacing: 4px;
-    }
-
-    .brand-sub {
-      font-size: 13px;
-      color: #00F0FF;
-      margin-left: 10px;
-      letter-spacing: 2px;
-    }
-
-    .top-badges {
-      display: flex;
-      gap: 12px;
-    }
-
-    .badge-pill {
-      background: #07101E;
-      border: 1px solid #1E293B;
-      color: #00FF9D;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 6px 14px;
-      border-radius: 6px;
-      letter-spacing: 1px;
-    }
-
-    /* Tech Stack Hash Tags */
-    .tech-tags {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .tag-item {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(0, 255, 157, 0.3);
-      color: #00FF9D;
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 6px;
-    }
-
-    /* Platform Navigation Tabs */
-    .platform-tabs {
-      display: flex;
-      gap: 10px;
-      margin-top: 6px;
-      flex-wrap: wrap;
-    }
-
-    .tab-btn {
-      padding: 12px 20px;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid #334155;
-      color: #94A3B8;
-      font-weight: 700;
-      font-size: 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.3s;
-    }
-
-    .tab-btn.active {
-      background: rgba(0, 240, 255, 0.15);
-      border-color: #00F0FF;
-      color: #00F0FF;
-      box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
-    }
-
-    .red-dot {
-      width: 10px;
-      height: 10px;
-      background: #FF4757;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #FF4757;
-    }
-
-    /* Viewport Area */
-    .viewport-box {
-      width: 100%;
-      height: 480px;
-      background: #000000;
-      border: 1px solid #1E293B;
-      border-radius: 16px;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    #dna-canvas {
-      width: 100%;
-      height: 100%;
-    }
-
-    .fps-badge {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(2, 4, 8, 0.85);
-      border: 1px solid #00F0FF;
-      color: #00F0FF;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 6px 14px;
-      border-radius: 6px;
-      z-index: 5;
-    }
-
-    .viewport-watermark {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.4);
-      letter-spacing: 2px;
-      z-index: 5;
-    }
-
-    /* Dynamic Tab Panels */
-    .tab-panel {
-      display: none;
-      width: 100%;
-      height: 100%;
-    }
-
-    .tab-panel.active {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-
-    /* Control Grid */
-    .controls-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 14px;
-    }
-
-    .control-box {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid #1E293B;
-      border-radius: 10px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .control-label {
-      font-size: 10px;
-      color: #64748B;
-      letter-spacing: 1px;
-    }
-
-    .control-select {
-      background: #07101E;
-      border: 1px solid #334155;
-      color: #00FF9D;
-      padding: 8px;
-      border-radius: 6px;
-      font-size: 12px;
-      outline: none;
-    }
-
-    /* Action Bar */
-    .action-bar {
-      display: flex;
-      gap: 16px;
-    }
-
-    .btn-action {
-      flex: 1;
-      padding: 16px;
-      background: #00F0FF;
-      color: #040810;
-      font-weight: 900;
-      font-size: 14px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      letter-spacing: 2px;
-      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
-      transition: all 0.3s;
-    }
-
-    .btn-action:hover {
-      background: #00FF9D;
-      box-shadow: 0 0 30px rgba(0, 255, 157, 0.6);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KAPTURA by Ethernium — CHRONO Capture Studio</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/hud.css">
 </head>
 <body>
-  <div class="studio-container">
-    <!-- Header -->
-    <div class="top-header">
-      <div>
-        <span class="brand-logo">KAPTURA</span>
-        <span class="brand-sub">BY ETHERNIUM — CHRONO CAPTURE STUDIO</span>
-      </div>
-      <div class="top-badges">
-        <span class="badge-pill">ZERO-COST LOCAL STUDIO</span>
-        <span class="badge-pill" style="color: #00F0FF;">100% PRIVACY LOCAL-FIRST</span>
-      </div>
+
+<!-- Non-blocking toast notifications -->
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+<div class="hud-container">
+
+  <!-- HEADER -->
+  <div class="hud-header">
+    <div class="brand-title">
+      <span style="font-size:26px; font-weight:900; letter-spacing:4px; color:var(--white)">KAPTURA</span>
+      <span style="font-size:12px; font-weight:700; letter-spacing:3px; color:var(--cyan); opacity:0.85; margin-left:6px">BY ETHERNIUM</span>
     </div>
-
-    <!-- Tech Tags -->
-    <div class="tech-tags">
-      <span class="tag-item">• WebGL Lanczos</span>
-      <span class="tag-item">• MP4 encode</span>
-      <span class="tag-item">• WebM/VP9</span>
-      <span class="tag-item">• AV1</span>
-      <span class="tag-item">• Workers</span>
-      <span class="tag-item">• WebCodecs</span>
-    </div>
-
-    <!-- Platform Navigation Tabs -->
-    <div class="platform-tabs">
-      <button class="tab-btn active" onclick="switchTab(0)"><span class="red-dot"></span> RECORDER STUDIO</button>
-      <button class="tab-btn" onclick="switchTab(1)">🎬 60 FPS CINEMA GIF</button>
-      <button class="tab-btn" onclick="switchTab(2)">🌀 120 FPS SVG VECTOR</button>
-      <button class="tab-btn" onclick="switchTab(3)">📁 VAULT &amp; HISTORIAL (0)</button>
-      <button class="tab-btn" onclick="switchTab(4)">⚡ V-CONVERTER</button>
-      <button class="tab-btn" onclick="switchTab(5)">👁️ UPSKALETOR AI</button>
-    </div>
-
-    <!-- Main Viewport Box -->
-    <div class="viewport-box">
-      <div class="viewport-watermark" id="view-title">ETHERNIUM // SOVEREIGN RECORDER</div>
-      <div class="fps-badge" id="fps-counter">90 FPS</div>
-
-      <!-- PANEL 0: RECORDER STUDIO (3D DNA Helix Canvas) -->
-      <div class="tab-panel active" id="panel-0">
-        <canvas id="dna-canvas"></canvas>
-      </div>
-
-      <!-- PANEL 1: 60 FPS CINEMA GIF -->
-      <div class="tab-panel" id="panel-1" style="padding: 40px; text-align: center;">
-        <h2 style="font-family: 'Orbitron', monospace; color: #00F0FF; margin-bottom: 16px;">HERRAMIENTA 2: CINEMATIC 60 FPS GIF STUDIO</h2>
-        <p style="color: #94A3B8; max-width: 600px; line-height: 1.6; margin-bottom: 24px;">
-          Motor de generación cinemática HD en bucle a 60 FPS para incrustación directa en la cabecera de tu perfil de GitHub.
-        </p>
-        <img src="exports/kaptura-cinema-loop.gif" style="max-width: 80%; border-radius: 12px; border: 1px solid #00F0FF; box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);" />
-      </div>
-
-      <!-- PANEL 2: 120 FPS SVG VECTOR -->
-      <div class="tab-panel" id="panel-2" style="padding: 40px; text-align: center;">
-        <h2 style="font-family: 'Orbitron', monospace; color: #00FF9D; margin-bottom: 16px;">HERRAMIENTA 3: ZERO-LOSS 120 FPS SVG VECTOR STUDIO</h2>
-        <p style="color: #94A3B8; max-width: 600px; line-height: 1.6; margin-bottom: 24px;">
-          Exportador de animaciones vectoriales SVG nativas puras que se reproducen en vivo dentro de GitHub Markdown a 120 FPS.
-        </p>
-        <img src="exports/kaptura-video-hud.svg" style="max-width: 80%; border-radius: 12px; border: 1px solid #00FF9D; box-shadow: 0 0 30px rgba(0, 255, 157, 0.3);" />
-      </div>
-
-      <!-- PANEL 3: VAULT & HISTORIAL -->
-      <div class="tab-panel" id="panel-3" style="padding: 40px; text-align: center; color: #94A3B8;">
-        <h2 style="font-family: 'Orbitron', monospace; color: #FFD700; margin-bottom: 12px;">📁 RECORDING VAULT &amp; HISTORIAL</h2>
-        <p>No local recordings stored yet. All captures are saved local-first on your machine.</p>
-      </div>
-
-      <!-- PANEL 4: V-CONVERTER -->
-      <div class="tab-panel" id="panel-4" style="padding: 40px; text-align: center; color: #94A3B8;">
-        <h2 style="font-family: 'Orbitron', monospace; color: #7000FF; margin-bottom: 12px;">⚡ HARDWARE ACCELERATED V-CONVERTER</h2>
-        <p>Convert MP4 / WebM / AV1 using local WebCodecs GPU acceleration.</p>
-      </div>
-
-      <!-- PANEL 5: UPSKALETOR AI -->
-      <div class="tab-panel" id="panel-5" style="padding: 40px; text-align: center; color: #94A3B8;">
-        <h2 style="font-family: 'Orbitron', monospace; color: #00F0FF; margin-bottom: 12px;">👁️ UPSKALETOR AI FRAME INTERPOLATOR</h2>
-        <p>AI Spatial Upscaling & 60 FPS -> 120 FPS Frame Interpolation Model active.</p>
-      </div>
-    </div>
-
-    <!-- Controls Grid -->
-    <div class="controls-grid" id="controls-bar">
-      <div class="control-box">
-        <div class="control-label">CAPTURE MODE / ENGINE</div>
-        <select class="control-select">
-          <option>🧬 3D DNA Helix (Canvas)</option>
-          <option>🌀 Quantum Particle Cloud</option>
-          <option>🖥️ Screen / Window Recorder</option>
-        </select>
-      </div>
-
-      <div class="control-box">
-        <div class="control-label">TARGET RESOLUTION</div>
-        <select class="control-select">
-          <option>🔥 4K UHD (3840x2160)</option>
-          <option>📺 1080p FHD (1920x1080)</option>
-        </select>
-      </div>
-
-      <div class="control-box">
-        <div class="control-label">ENCODING FRAME RATE</div>
-        <select class="control-select">
-          <option>⚡ 60 FPS (Broadcast)</option>
-          <option>🚀 120 FPS (Ultra)</option>
-        </select>
-      </div>
-
-      <div class="control-box">
-        <div class="control-label">BITRATE TARGET</div>
-        <select class="control-select">
-          <option>💎 100 Mbps (Master)</option>
-          <option>⚡ 50 Mbps (High)</option>
-        </select>
-      </div>
-
-      <div class="control-box">
-        <div class="control-label">MASTER FORMAT</div>
-        <select class="control-select">
-          <option>🎬 MP4 (H.264 / AAC)</option>
-          <option>🌐 WebM (VP9 / Opus)</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Action Bar -->
-    <div class="action-bar">
-      <button class="btn-action" id="action-btn">🔴 START RECORDING</button>
+    <div style="display:flex; gap:12px; align-items:center">
+      <div class="hud-badge">ZERO-COST LOCAL STUDIO</div>
+      <div class="hud-badge" style="color:var(--cyan); border-color:rgba(0,240,255,0.3)">100% PRIVACY LOCAL-FIRST</div>
     </div>
   </div>
 
-  <script>
-    function switchTab(idx) {
-      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-        btn.classList.toggle('active', i === idx);
-      });
+  <!-- CAPABILITY CHIPS (honest runtime report) -->
+  <div class="caps-row" id="capsRow"></div>
 
-      document.querySelectorAll('.tab-panel').forEach((panel, i) => {
-        panel.classList.toggle('active', i === idx);
-      });
+  <!-- NAVIGATION TABS -->
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="tab-recorder">🔴 RECORDER STUDIO</button>
+    <button class="tab-btn" data-tab="tab-cinema">🎬 CINEMA GIF</button>
+    <button class="tab-btn" data-tab="tab-svg">🌀 SVG VECTOR</button>
+    <button class="tab-btn" data-tab="tab-vault">📁 VAULT &amp; HISTORIAL (<span id="vault-count">0</span>)</button>
+    <button class="tab-btn" data-tab="tab-converter">⚡ V-CONVERTER</button>
+    <button class="tab-btn" data-tab="tab-upskaletor">◆ UPSKALETOR AI</button>
+  </div>
 
-      const titles = [
-        "ETHERNIUM // SOVEREIGN RECORDER",
-        "KAPTURA TOOL 2 // CINEMATIC 60 FPS GIF STUDIO",
-        "KAPTURA TOOL 3 // ZERO-LOSS 120 FPS SVG VECTOR STUDIO",
-        "ETHERNIUM // RECORDING VAULT",
-        "ETHERNIUM // WEBCODECS V-CONVERTER",
-        "ETHERNIUM // UPSKALETOR AI ENGINE"
-      ];
-      const fpsVals = ["90 FPS", "60 FPS", "120 FPS", "0 FPS", "120 FPS", "120 FPS"];
+  <!-- TAB 1: RECORDER STUDIO -->
+  <div id="tab-recorder" class="tab-content active">
+    <div class="stage-frame">
+      <div class="rec-indicator" id="recIndicator">
+        <div class="rec-dot"></div>
+        <span id="recTimer" style="color:var(--red); font-weight:700">REC 00:00:00</span>
+      </div>
+      <div class="fps-badge" id="fpsDisplay">— FPS</div>
+      <canvas id="renderCanvas" width="3840" height="2160"></canvas>
+      <video id="previewVideo" autoplay playsinline muted></video>
+    </div>
 
-      document.getElementById('view-title').innerText = titles[idx];
-      document.getElementById('fps-counter').innerText = fpsVals[idx];
-    }
+    <div class="controls-grid" style="grid-template-columns: repeat(5, 1fr);">
+      <div class="control-card">
+        <div class="control-label">CAPTURE MODE / ENGINE</div>
+        <select id="modeSelect">
+          <option value="screen">🌐 Screen / Tab Capture (getDisplayMedia)</option>
+          <option value="dna" selected>🧬 3D DNA Helix (Canvas Engine)</option>
+          <option value="binary">💻 Binary Matrix Stream (Canvas Engine)</option>
+          <option value="fibonacci">🌀 Fibonacci Vortex (Canvas Engine)</option>
+        </select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">TARGET RESOLUTION</div>
+        <select id="resSelect">
+          <option value="3840x2160" selected>🔥 4K UHD (3840x2160)</option>
+          <option value="1920x1080">🎬 Full HD 1080p (1920x1080)</option>
+          <option value="1280x720">📱 720p HD (1280x720)</option>
+        </select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">ENCODING FRAME RATE</div>
+        <select id="fpsSelect">
+          <option value="120">120 FPS (requested)</option>
+          <option value="60" selected>60 FPS (Broadcast)</option>
+          <option value="30">30 FPS (Compact)</option>
+        </select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">BITRATE TARGET</div>
+        <select id="bitrateSelect">
+          <option value="100" selected>100 Mbps (Master)</option>
+          <option value="80">80 Mbps (Studio)</option>
+          <option value="50">50 Mbps (High)</option>
+        </select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">MASTER FORMAT</div>
+        <select id="codecSelect">
+          <option value="mp4" selected>🎬 MP4 (H.264 / AAC)</option>
+          <option value="vp9">🌐 WebM (VP9)</option>
+          <option value="av1">🚀 WebM (AV1)</option>
+        </select>
+      </div>
+    </div>
 
-    // 3D DNA Canvas
-    const cvs = document.getElementById('dna-canvas');
-    const ctx = cvs.getContext('2d');
+    <div class="btn-group">
+      <button class="btn btn-secondary" id="btnSelectSource">🌐 SELECT SOURCE (TAB/SCREEN)</button>
+      <button class="btn btn-primary" id="btnStartRec">🔴 START RECORDING</button>
+      <button class="btn btn-danger" id="btnStopRec" disabled>⏹️ STOP &amp; SAVE MASTER</button>
+      <div class="export-dropdown">
+        <button class="btn btn-secondary" id="btnExportMenu">💾 EXPORT IN FORMAT ▼</button>
+        <div class="export-menu" id="exportMenu">
+          <div class="export-item" data-fmt="mp4"><span>🎬 Master MP4</span> <span class="fmt-tag">real re-encode</span></div>
+          <div class="export-item" data-fmt="webm"><span>🌐 WebM Stream</span> <span class="fmt-tag">real re-encode</span></div>
+          <div class="export-item" data-fmt="gif"><span>🎞️ Animated GIF</span> <span class="fmt-tag">native encoder</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="proc-readout" id="recorderReadout"></div>
+  </div>
 
-    function resize() {
-      cvs.width = cvs.clientWidth;
-      cvs.height = cvs.clientHeight;
-    }
-    window.onresize = resize;
-    resize();
+  <!-- TAB: CINEMA GIF (real, native GIF89a encoder) -->
+  <div id="tab-cinema" class="tab-content">
+    <div style="margin-bottom:16px; font-family:'Fira Code', monospace; font-size:13px; color:var(--muted)">
+      🎬 CINEMA GIF STUDIO · GIF real de alta calidad con el codificador GIF89a nativo (median-cut + dithering + LZW). Nada de imágenes estáticas: se codifica de verdad.
+    </div>
+    <div class="dropzone" id="cinemaDropzone">
+      <div class="dz-icon">🎬</div>
+      <div class="dz-title" id="cinemaDzTitle">DROP VIDEO · O USA TU ÚLTIMA GRABACIÓN</div>
+      <div class="dz-sub" id="cinemaDzSub">.mp4 · .webm · .mov — salida GIF animado real</div>
+      <input type="file" id="cinemaFileInput" accept="video/*" style="display:none">
+    </div>
+    <div class="progress-bar-bg" id="cinemaProgressBarBg"><div class="progress-bar-fill" id="cinemaProgressBarFill"></div></div>
+    <div id="cinemaStatus" style="font-family:'Fira Code', monospace; font-size:12px; color:var(--emerald); margin-top:10px; text-align:center"></div>
+    <div class="controls-grid" style="margin-top:20px; grid-template-columns: repeat(4, 1fr);">
+      <div class="control-card">
+        <div class="control-label">FRAME RATE</div>
+        <select id="cinemaFps"><option value="24" selected>24 fps (cinema)</option><option value="18">18 fps</option><option value="12">12 fps (compact)</option></select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">WIDTH</div>
+        <select id="cinemaWidth"><option value="640" selected>640 px</option><option value="480">480 px</option><option value="320">320 px</option></select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">DITHER</div>
+        <select id="cinemaDither"><option value="1" selected>Floyd–Steinberg</option><option value="0">None (flat)</option></select>
+      </div>
+      <div class="control-card" style="display:flex; align-items:flex-end">
+        <button class="btn btn-primary" style="width:100%" id="btnCinemaExport">RENDER GIF (REAL)</button>
+      </div>
+    </div>
+    <div style="margin-top:18px; text-align:center"><img id="cinemaPreview" alt="" style="max-width:80%; border-radius:12px; display:none; border:1px solid var(--emerald)"></div>
+  </div>
 
-    let t = 0;
-    const nodes = 20;
+  <!-- TAB: SVG VECTOR (real animated SVG exporter) -->
+  <div id="tab-svg" class="tab-content">
+    <div style="margin-bottom:16px; font-family:'Fira Code', monospace; font-size:13px; color:var(--muted)">
+      🌀 SVG VECTOR STUDIO · exporta un SVG animado REAL (SMIL flip-book) que se reproduce en cualquier navegador sin JavaScript.
+      <span style="color:var(--gold)">Nota honesta:</span> GitHub sanea SMIL en imágenes embebidas — para GitHub usa el Cinema GIF; el SVG se reproduce en navegador y standalone.
+    </div>
+    <div class="dropzone" id="svgDropzone" style="border-color:var(--emerald)">
+      <div class="dz-icon" style="color:var(--emerald)">🌀</div>
+      <div class="dz-title" id="svgDzTitle">DROP VIDEO · O EXPORTA LA ESCENA ACTUAL DEL CANVAS</div>
+      <div class="dz-sub" id="svgDzSub">salida .svg animado — vectorial-friendly, escalable</div>
+      <input type="file" id="svgFileInput" accept="video/*" style="display:none">
+    </div>
+    <div class="progress-bar-bg" id="svgProgressBarBg"><div class="progress-bar-fill" id="svgProgressBarFill"></div></div>
+    <div id="svgStatus" style="font-family:'Fira Code', monospace; font-size:12px; color:var(--emerald); margin-top:10px; text-align:center"></div>
+    <div class="controls-grid" style="margin-top:20px; grid-template-columns: repeat(4, 1fr);">
+      <div class="control-card">
+        <div class="control-label">SOURCE</div>
+        <select id="svgSource"><option value="scene" selected>Current canvas scene</option><option value="file">Dropped / recorded video</option></select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">FRAME RATE</div>
+        <select id="svgFps"><option value="12" selected>12 fps</option><option value="8">8 fps</option><option value="18">18 fps</option></select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">SECONDS (scene)</div>
+        <select id="svgSeconds"><option value="3" selected>3 s</option><option value="5">5 s</option><option value="2">2 s</option></select>
+      </div>
+      <div class="control-card" style="display:flex; align-items:flex-end">
+        <button class="btn btn-primary" style="width:100%" id="btnSvgExport">EXPORT SVG (REAL)</button>
+      </div>
+    </div>
+  </div>
 
-    function renderDNA() {
-      if (!document.getElementById('panel-0').classList.contains('active')) {
-        requestAnimationFrame(renderDNA);
-        return;
-      }
+  <!-- TAB 2: VAULT -->
+  <div id="tab-vault" class="tab-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px">
+      <div style="font-family:'Fira Code', monospace; font-size:13px; color:var(--muted)">
+        HISTORIAL LOCAL (<span style="color:var(--emerald)">INDEXEDDB LOCAL-FIRST</span>)
+      </div>
+      <button class="btn btn-secondary" style="padding:6px 14px; font-size:11px" id="btnClearVault">🗑️ CLEAR ALL VAULT</button>
+    </div>
+    <div class="vault-grid" id="vaultGrid"></div>
+  </div>
 
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, cvs.width, cvs.height);
+  <!-- TAB 3: V-CONVERTER (REAL in-browser transcoding) -->
+  <div id="tab-converter" class="tab-content">
+    <div style="margin-bottom:20px; font-family:'Fira Code', monospace; font-size:13px; color:var(--muted)">
+      ⚡ TRANSCODIFICACIÓN REAL EN EL NAVEGADOR · reescalado Lanczos + re-encode nativo. El progreso refleja el trabajo real, no una animación.
+    </div>
 
-      const cx = cvs.width / 2;
-      const cy = cvs.height / 2;
-      const spacing = 35;
-      const startX = cx - (nodes * spacing) / 2;
+    <div class="dropzone" id="dropzone">
+      <div class="dz-icon">⚡</div>
+      <div class="dz-title">DRAG &amp; DROP VIDEO FILE OR CLICK TO BROWSE</div>
+      <div class="dz-sub">.webm · .mp4 · .mov · .mkv — el archivo se procesa localmente</div>
+      <input type="file" id="fileInput" accept="video/*" style="display:none">
+    </div>
 
-      t += 0.04;
+    <div class="progress-bar-bg" id="progressBarBg"><div class="progress-bar-fill" id="progressBarFill"></div></div>
+    <div id="converterStatus" style="font-family:'Fira Code', monospace; font-size:12px; color:var(--cyan); margin-top:10px; text-align:center"></div>
 
-      for (let i = 0; i < nodes; i++) {
-        const x = startX + i * spacing;
-        const offset = i * 0.35 + t;
-        
-        const y1 = cy + Math.sin(offset) * 110;
-        const y2 = cy - Math.sin(offset) * 110;
+    <div class="controls-grid" style="margin-top:24px; grid-template-columns: repeat(4, 1fr);">
+      <div class="control-card">
+        <div class="control-label">TARGET FORMAT</div>
+        <select id="convFormat">
+          <option value="mp4" selected>🎬 MP4 (H.264)</option>
+          <option value="webm">🌐 WebM (VP9)</option>
+          <option value="gif">🎞️ Animated GIF</option>
+        </select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">TARGET RESOLUTION</div>
+        <select id="convRes">
+          <option value="source" selected>Keep original</option>
+          <option value="3840x2160">4K UHD</option>
+          <option value="1920x1080">1080p</option>
+          <option value="1280x720">720p</option>
+          <option value="854x480">480p</option>
+        </select>
+      </div>
+      <div class="control-card">
+        <div class="control-label">SCALER QUALITY</div>
+        <select id="convQuality">
+          <option value="max" selected>Max (Lanczos-3)</option>
+          <option value="fast">Fast (native GPU)</option>
+        </select>
+      </div>
+      <div class="control-card" style="display:flex; align-items:flex-end">
+        <button class="btn btn-primary" style="width:100%" id="btnConvertNow">CONVERT (REAL)</button>
+      </div>
+    </div>
+  </div>
 
-        const z1 = Math.cos(offset);
-        const z2 = -Math.cos(offset);
+  <!-- TAB 4: UPSKALETOR -->
+  <div id="tab-upskaletor" class="tab-content">
+    <div class="engine-panel">
+      <div class="engine-kicker">SCALING ENGINE · REAL LANCZOS IN-BROWSER + HONEST AI HANDOFF</div>
+      <h2 class="engine-title">UPSKALETOR <span style="color:var(--violet)">by Ethernium</span></h2>
+      <p class="engine-copy">
+        Los perfiles matemáticos (Lanczos 1080p/4K, broadcast social) se procesan <strong>de verdad aquí mismo</strong>.
+        El perfil neuronal Real-ESRGAN se ejecuta en el motor independiente UPSKALETOR: KAPTURA entrega el master sin alterarlo y te da el comando firmado. Sin barras falsas.
+      </p>
 
-        ctx.strokeStyle = `rgba(0, 240, 255, ${0.2 + Math.abs(z1)*0.5})`;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(x, y1);
-        ctx.lineTo(x, y2);
-        ctx.stroke();
+      <div class="dropzone" id="upskaletorDropzone" style="border-color:var(--violet); background:rgba(139,92,246,0.04)">
+        <div class="dz-icon" style="color:var(--violet)">◆</div>
+        <div class="dz-title" id="upskaletorDzTitle">DRAG &amp; DROP VIDEO HERE TO UPSCALE</div>
+        <div class="dz-sub" id="upskaletorDzSub">.mp4 · .webm · .mov · .mkv — o usa tu última grabación</div>
+        <input type="file" id="upskaletorFileInput" accept="video/*" style="display:none">
+      </div>
 
-        const r1 = 6 + z1 * 2;
-        ctx.fillStyle = z1 > 0 ? '#00FF9D' : '#7000FF';
-        ctx.beginPath();
-        ctx.arc(x, y1, r1, 0, Math.PI * 2);
-        ctx.fill();
+      <div class="progress-bar-bg" id="upskaletorProgressBarBg" style="margin-top:16px"><div class="progress-bar-fill" id="upskaletorProgressBarFill" style="background:linear-gradient(90deg, var(--violet), var(--cyan))"></div></div>
+      <div id="upskaletorStatus" style="font-family:'Fira Code', monospace; font-size:12px; color:var(--violet); margin-top:10px; text-align:center"></div>
 
-        const r2 = 6 + z2 * 2;
-        ctx.fillStyle = z2 > 0 ? '#00FF9D' : '#7000FF';
-        ctx.beginPath();
-        ctx.arc(x, y2, r2, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      <div class="controls-grid" style="margin-top:20px; grid-template-columns: repeat(3, 1fr);">
+        <div class="control-card">
+          <div class="control-label">PROFILE</div>
+          <select id="upskaletorProfileSelect">
+            <option value="4k_ai" selected>🔥 4K UHD · Real-ESRGAN AI (handoff)</option>
+            <option value="4k_lanczos">🎬 4K UHD · Lanczos (in-browser)</option>
+            <option value="1080p_lanczos">🎬 1080p · Lanczos (in-browser)</option>
+            <option value="twitter_4k">🐦 Twitter/X 4K</option>
+            <option value="twitter_1080p">🐦 Twitter/X 1080p</option>
+            <option value="youtube_4k">📺 YouTube 4K Master</option>
+            <option value="720p">📱 720p Compact</option>
+          </select>
+        </div>
+        <div class="control-card">
+          <div class="control-label">ENGINE HINT</div>
+          <select id="upskaletorEngineSelect">
+            <option value="auto" selected>⚡ Auto (GPU if available)</option>
+            <option value="ai">🧠 Neural AI (external)</option>
+            <option value="cpu">💻 CPU Lanczos</option>
+          </select>
+        </div>
+        <div class="control-card" style="display:flex; align-items:flex-end">
+          <button class="btn btn-primary" style="width:100%; background:linear-gradient(135deg, var(--violet) 0%, #6D28D9 100%)" id="btnUpscaleNow">🚀 START UPSKALETOR</button>
+        </div>
+      </div>
 
-      requestAnimationFrame(renderDNA);
-    }
-    renderDNA();
-  </script>
+      <div class="engine-actions" style="margin-top:24px">
+        <a class="engine-link" href="https://github.com/SteveBlackbeard/UPSKALETOR-by-Ethernium" target="_blank" rel="noopener noreferrer"><span class="btn btn-primary">OPEN UPSKALETOR REPO</span></a>
+        <a class="engine-link" href="https://github.com/SteveBlackbeard/UPSKALETOR-by-Ethernium/releases" target="_blank" rel="noopener noreferrer"><span class="btn btn-secondary">SIGNED RELEASES</span></a>
+        <button class="btn btn-secondary" type="button" id="btnCopyCmd">COPY CONSOLE COMMAND</button>
+      </div>
+
+      <div class="boundary-note" id="boundaryNote">
+        PRODUCT BOUNDARY // KAPTURA is the visual capture studio and performs real in-browser transcoding (WebM/MP4 re-encode and a native JavaScript GIF encoder).
+        UPSKALETOR is the processing engine and runs Real-ESRGAN AI as an independent engine. GIF export uses a native JavaScript encoder.
+        LÍMITE DEL PRODUCTO // KAPTURA captura y transcodifica de verdad en el navegador; UPSKALETOR realiza el escalado con IA por separado.
+      </div>
+    </div>
+  </div>
+
+  <!-- TELEMETRY BAR -->
+  <div class="telemetry-bar">
+    <div>RECORDED FRAMES: <span class="stat-val" id="statFrames">0</span></div>
+    <div>BUFFER SIZE: <span class="stat-val" id="statSize">0.0 MB</span></div>
+    <div>SOURCE: <span class="stat-val" id="statSourceMode" style="color:var(--emerald)">CANVAS ENGINE</span></div>
+  </div>
+</div>
+
+<!-- Engines (order matters: leaf modules first, app.js last) -->
+<script src="js/capabilities.js"></script>
+<script src="js/gif-encoder.js"></script>
+<script src="js/lanczos.js"></script>
+<script src="js/lanczos-gl.js"></script>
+<script src="js/scaler.js"></script>
+<script src="js/transcoder.js"></script>
+<script src="js/svg-vector.js"></script>
+<script src="js/upskaletor.js"></script>
+<script src="js/vault.js"></script>
+<script src="js/capture.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

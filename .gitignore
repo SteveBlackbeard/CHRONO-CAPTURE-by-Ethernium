@@ -5,6 +5,6 @@
 concat_list.txt
 node_modules/
 __pycache__/
-dist/
-.venv/
-.tmp/
+
+# test artifacts
+tests/sample_output.gif
